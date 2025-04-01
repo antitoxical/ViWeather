@@ -1,6 +1,6 @@
-# viweather1
+# ViWeather
 
-A new Flutter project.
+A new Flutter Weather App based on WeatherAPI.
 
 ## Getting Started
 
