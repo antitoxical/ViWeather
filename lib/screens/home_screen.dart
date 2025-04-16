@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:viweather1/models/weather_model.dart';
 import 'package:viweather1/services/weather_service.dart';
+import 'package:viweather1/services/location_service.dart';
+import 'package:viweather1/widgets/temperature_chart.dart';
+import 'package:viweather1/widgets/weather_map.dart';
+import 'package:viweather1/widgets/air_quality_card.dart';
+import 'package:viweather1/widgets/animated_weather_icon.dart';
 import '../cards/humidity_card.dart';
 import '../cards/moonphase_card.dart';
 import '../cards/precipitation_card.dart';
 import '../cards/pressure_card.dart';
 import '../cards/sunrise_card.dart';
 import '../cards/wind_card.dart';
+import 'package:viweather1/widgets/clothing_recommendation_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,35 +24,74 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Создаем экземпляр WeatherService
   final WeatherService _weatherService = WeatherService();
+  final LocationService _locationService = LocationService();
+  bool _isLoading = true;
 
-  // Состояния для хранения данных погоды
   CurrentWeather? currentWeather;
   List<HourlyForecast>? hourlyForecast;
   List<DailyForecast>? dailyForecast;
   CurrentWeatherDetails? currentWeatherDetails;
+  Position? currentPosition;
+  Map<String, double>? cityCoordinates;
+  int airQualityIndex = 0;
 
-  // Контроллер для текстового поля
   final TextEditingController _cityController = TextEditingController();
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      final position = await _locationService.getCurrentLocation();
+      setState(() {
+        currentPosition = position;
+        cityCoordinates = {
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+        };
+      });
+      await fetchWeatherDataByCoordinates(position.latitude, position.longitude);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка получения местоположения: $e')),
+      );
+    }
+  }
+
+  Future<void> fetchWeatherDataByCoordinates(double lat, double lon) async {
+    try {
+      final city = await _locationService.getCityFromCoordinates(lat, lon);
+      await fetchWeatherData(city);
+    } catch (e) {
+      print('Error fetching weather data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка получения данных о погоде: $e')),
+      );
+    }
+  }
 
   Future<void> fetchWeatherData(String city) async {
     try {
+      setState(() => _isLoading = true);
+      
+      // Получаем координаты города
+      final coordinates = await _weatherService.getCityCoordinates(city);
+      setState(() => cityCoordinates = coordinates);
+
       final current = await _weatherService.getCurrentWeather(city);
       final hourly = await _weatherService.getHourlyForecast(city);
       final daily = await _weatherService.getDailyForecast(city);
       final details = await _weatherService.getCurrentWeatherDetails(city);
-
-      print('API Response for Daily Forecast: $daily'); // Добавьте эту строку
 
       setState(() {
         currentWeather = current;
         hourlyForecast = hourly;
         dailyForecast = daily;
         currentWeatherDetails = details;
+        airQualityIndex = 50;
+        _isLoading = false;
       });
     } catch (e) {
       print('Error fetching weather data: $e');
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Город не найден. Попробуйте снова.')),
       );
@@ -55,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    fetchWeatherData('Cupertino');
+    _getCurrentLocation();
   }
 
   @override
@@ -63,7 +109,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Градиентный фон
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -82,7 +127,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Поле ввода города
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
@@ -119,35 +163,53 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
 
-                  // Отображение текущей погоды
                   if (currentWeather != null)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'MY LOCATION',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontSize: 16,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'MY LOCATION',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.7),
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    currentWeather!.location,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          Text(
-                            currentWeather!.location,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '${currentWeather!.temperature}°',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 64,
-                              fontWeight: FontWeight.w300,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedWeatherIcon(
+                                condition: currentWeather!.condition,
+                                size: 80,
+                              ),
+                              Text(
+                                '${currentWeather!.temperature}°',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 64,
+                                  fontWeight: FontWeight.w300,
+                                ),
+                              ),
+                            ],
                           ),
                           Text(
                             currentWeather!.condition,
@@ -166,58 +228,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     )
+                  else if (_isLoading)
+                    const Center(child: CircularProgressIndicator())
                   else
-                    Center(child: CircularProgressIndicator()),
-
-                  // Часовой прогноз
-                  if (hourlyForecast != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Column(
-                        children: [
-                          const Text(
-                            'Sunny conditions will continue all day. Wind gusts are up to 12 km/h.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(height: 16),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: hourlyForecast!
-                                  .map((hour) => Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      hour.time,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    Icon(
-                                      Icons.sunny, // Здесь можно добавить иконки погоды
-                                      color: Colors.white,
-                                    ),
-                                    Text(
-                                      '${hour.temperature}°',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ))
-                                  .toList(),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    const Center(child: Text('Введите название города')),
 
                   if (dailyForecast != null)
                     Padding(
@@ -234,44 +248,41 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           ListView.builder(
-                            shrinkWrap: true, // Уменьшает размер до содержимого
-                            physics: NeverScrollableScrollPhysics(), // Отключает прокрутку
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
                             itemCount: dailyForecast!.length,
                             itemBuilder: (context, index) {
                               final forecast = dailyForecast![index];
-                              return Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  // День недели с иконкой погоды
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.sunny, // Здесь можно добавить иконки погоды
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        AnimatedWeatherIcon(
+                                          condition: forecast.condition,
+                                          size: 24,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          DateFormat.E().format(DateTime.parse(forecast.day)),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      '${forecast.maxTemp}°/${forecast.minTemp}°',
+                                      style: TextStyle(
                                         color: Colors.white,
+                                        fontSize: 18,
                                       ),
-                                      SizedBox(width: 8), // Отступ между иконкой и текстом
-                                      Text(
-                                        DateFormat.E().format(DateTime.parse(forecast.day)),
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  // Информация о погоде (максимальная и минимальная температура)
-                                  Row(
-                                    children: [
-                                      Text(
-                                        '${forecast.maxTemp}°/${forecast.minTemp}°',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                    ),
+                                  ],
+                                ),
                               );
                             },
                           ),
@@ -279,7 +290,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                  // Детальная информация (карточки)
                   if (currentWeatherDetails != null)
                     Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -294,6 +304,22 @@ class _HomeScreenState extends State<HomeScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+
+                          if (cityCoordinates != null)
+                            WeatherMap(
+                              latitude: cityCoordinates!['latitude']!,
+                              longitude: cityCoordinates!['longitude']!,
+                            ),
+
+                          if (hourlyForecast != null)
+                            TemperatureChart(hourlyForecast: hourlyForecast!),
+
+                          if (currentWeather != null)
+                            AirQualityCard(
+                              aqi: airQualityIndex,
+                              description: 'Текущее качество воздуха в вашем регионе',
+                            ),
+
                           SizedBox(height: 16),
                           WindCard(
                             windSpeed: currentWeatherDetails!.windSpeed,
@@ -323,6 +349,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           PrecipitationCard(
                             precipitation: currentWeatherDetails!.precipitation,
                             description: 'Следующий снегопад ожидается в воскресенье и составит 12 мм.',
+                          ),
+                          const SizedBox(height: 16),
+                          ClothingRecommendationCard(
+                            temperature: currentWeather!.temperature,
+                            condition: currentWeather!.condition,
                           ),
                         ],
                       ),
