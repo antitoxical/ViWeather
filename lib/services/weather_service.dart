@@ -34,6 +34,7 @@ class WeatherService {
           condition: data['current']['condition']['text'],
           maxTemp: data['forecast']['forecastday'][0]['day']['maxtemp_c'].toDouble(),
           minTemp: data['forecast']['forecastday'][0]['day']['mintemp_c'].toDouble(),
+          timezone: data['location']['tz_id'],
         );
       } else {
         print('API Error Response: ${response.body}');
@@ -115,24 +116,20 @@ class WeatherService {
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      // Явное декодирование тела ответа как UTF-8
       final decodedBody = utf8.decode(response.bodyBytes);
       final data = json.decode(decodedBody);
       print('API Response: $data');
 
-      // Проверка наличия данных
       if (data['forecast'] == null || data['forecast']['forecastday'] == null) {
         throw Exception('Данные о прогнозе погоды отсутствуют');
       }
 
       return data['forecast']['forecastday'][0]['hour']
           .map<HourlyForecast>((hour) => HourlyForecast(
-        time: hour['time'].split(' ')[1],
-        temperature: hour['temp_c'].toDouble(),
-        condition: hour['condition']['text'],
-      ))
-          .toList()
-          .take(8)
+                time: hour['time'].split(' ')[1],
+                temperature: hour['temp_c'].toDouble(),
+                condition: hour['condition']['text'],
+              ))
           .toList();
     } else {
       print('API Error Response: ${response.body}');
@@ -202,6 +199,43 @@ class WeatherService {
       }
     } catch (e) {
       print('Error in getCityCoordinates: $e');
+      rethrow;
+    }
+  }
+
+  Future<int> getAirQuality(String city) async {
+    try {
+      final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1&aqi=yes&lang=ru');
+      print('Request URL for AQI: $url');
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final data = json.decode(decodedBody);
+        
+        if (data['current'] == null || data['current']['air_quality'] == null) {
+          throw Exception('Данные о качестве воздуха отсутствуют');
+        }
+
+        // Получаем US EPA индекс качества воздуха
+        final usEpaIndex = data['current']['air_quality']['us-epa-index'];
+        
+        // Конвертируем US EPA индекс (1-6) в AQI (0-500)
+        switch (usEpaIndex) {
+          case 1: return 25;  // Хорошее (0-50)
+          case 2: return 75;  // Умеренное (51-100)
+          case 3: return 125; // Нездоровое для чувствительных групп (101-150)
+          case 4: return 175; // Нездоровое (151-200)
+          case 5: return 250; // Очень нездоровое (201-300)
+          case 6: return 350; // Опасное (301-500)
+          default: return 50; // По умолчанию возвращаем среднее значение "хорошего" качества
+        }
+      } else {
+        print('API Error Response: ${response.body}');
+        throw Exception('Ошибка получения данных о качестве воздуха: ${response.body}');
+      }
+    } catch (e) {
+      print('Error in getAirQuality: $e');
       rethrow;
     }
   }

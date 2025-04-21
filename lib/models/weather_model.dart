@@ -4,6 +4,7 @@ class CurrentWeather {
   final String condition;
   final double maxTemp;
   final double minTemp;
+  final String timezone;
 
   CurrentWeather({
     required this.location,
@@ -11,6 +12,7 @@ class CurrentWeather {
     required this.condition,
     required this.maxTemp,
     required this.minTemp,
+    required this.timezone,
   });
 }
 

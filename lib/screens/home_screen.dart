@@ -80,13 +80,14 @@ class _HomeScreenState extends State<HomeScreen> {
       final hourly = await _weatherService.getHourlyForecast(city);
       final daily = await _weatherService.getDailyForecast(city);
       final details = await _weatherService.getCurrentWeatherDetails(city);
+      final aqi = await _weatherService.getAirQuality(city);
 
       setState(() {
         currentWeather = current;
         hourlyForecast = hourly;
         dailyForecast = daily;
         currentWeatherDetails = details;
-        airQualityIndex = 50;
+        airQualityIndex = aqi;
         _isLoading = false;
       });
     } catch (e) {
@@ -304,56 +305,103 @@ class _HomeScreenState extends State<HomeScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          const SizedBox(height: 16),
 
                           if (cityCoordinates != null)
-                            WeatherMap(
-                              latitude: cityCoordinates!['latitude']!,
-                              longitude: cityCoordinates!['longitude']!,
+                            Container(
+                              height: 200,
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 16),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: WeatherMap(
+                                  latitude: cityCoordinates!['latitude']!,
+                                  longitude: cityCoordinates!['longitude']!,
+                                ),
+                              ),
                             ),
 
                           if (hourlyForecast != null)
-                            TemperatureChart(hourlyForecast: hourlyForecast!),
-
-                          if (currentWeather != null)
-                            AirQualityCard(
-                              aqi: airQualityIndex,
-                              description: 'Текущее качество воздуха в вашем регионе',
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 16),
+                              child: TemperatureChart(
+                                temperatures: hourlyForecast!.map((forecast) => forecast.temperature).toList(),
+                                timezone: currentWeather!.timezone,
+                              ),
                             ),
 
-                          SizedBox(height: 16),
-                          WindCard(
-                            windSpeed: currentWeatherDetails!.windSpeed,
-                            windGusts: currentWeatherDetails!.windGusts,
-                            windDirection: currentWeatherDetails!.windDirection,
+                          if (currentWeather != null)
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 16),
+                              child: AirQualityCard(
+                                aqi: airQualityIndex,
+                                description: 'Текущее качество воздуха в вашем регионе',
+                              ),
+                            ),
+
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: WindCard(
+                              windSpeed: currentWeatherDetails!.windSpeed,
+                              windGusts: currentWeatherDetails!.windGusts,
+                              windDirection: currentWeatherDetails!.windDirection,
+                            ),
                           ),
-                          SizedBox(height: 16),
-                          HumidityCard(
-                            humidity: currentWeatherDetails!.humidity,
-                            dewPoint: currentWeatherDetails!.dewPoint,
+
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: HumidityCard(
+                              humidity: currentWeatherDetails!.humidity,
+                              dewPoint: currentWeatherDetails!.dewPoint,
+                            ),
                           ),
-                          SizedBox(height: 16),
-                          PressureCard(
-                            pressure: currentWeatherDetails!.pressure,
+
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: PressureCard(
+                              pressure: currentWeatherDetails!.pressure,
+                            ),
                           ),
-                          SizedBox(height: 16),
-                          SunriseSunsetCard(
-                            sunrise: currentWeatherDetails!.sunrise,
-                            sunset: currentWeatherDetails!.sunset,
+
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: SunriseSunsetCard(
+                              sunrise: currentWeatherDetails!.sunrise,
+                              sunset: currentWeatherDetails!.sunset,
+                            ),
                           ),
-                          SizedBox(height: 16),
-                          MoonPhaseCard(
-                            moonIllumination: currentWeatherDetails!.moonIllumination,
-                            moonPhase: currentWeatherDetails!.moonPhase,
+
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: MoonPhaseCard(
+                              moonIllumination: currentWeatherDetails!.moonIllumination,
+                              moonPhase: currentWeatherDetails!.moonPhase,
+                            ),
                           ),
-                          SizedBox(height: 16),
-                          PrecipitationCard(
-                            precipitation: currentWeatherDetails!.precipitation,
-                            description: 'Следующий снегопад ожидается в воскресенье и составит 12 мм.',
+
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: PrecipitationCard(
+                              precipitation: currentWeatherDetails!.precipitation,
+                              description: 'Следующий снегопад ожидается в воскресенье и составит 12 мм.',
+                            ),
                           ),
-                          const SizedBox(height: 16),
-                          ClothingRecommendationCard(
-                            temperature: currentWeather!.temperature,
-                            condition: currentWeather!.condition,
+
+                          Container(
+                            width: double.infinity,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: ClothingRecommendationCard(
+                              temperature: currentWeather!.temperature,
+                              condition: currentWeather!.condition,
+                            ),
                           ),
                         ],
                       ),
