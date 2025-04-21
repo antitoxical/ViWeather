@@ -14,27 +14,27 @@ class ClothingRecommendation {
     
     if (temperature > 25) {
       return ClothingRecommendation(
-        mainRecommendation: 'Легкая одежда',
-        accessories: ['Шляпа', 'Солнцезащитные очки', 'Солнцезащитный крем'],
-        description: 'На улице жарко, выбирайте легкую и светлую одежду',
+        mainRecommendation: 'Light clothing',
+        accessories: ['Hat', 'Sunglasses', 'Sunscreen'],
+        description: 'It\'s hot outside, choose light and bright clothing',
       );
     } else if (temperature > 15) {
       return ClothingRecommendation(
-        mainRecommendation: 'Демисезонная одежда',
-        accessories: ['Легкая куртка', 'Зонт'],
-        description: 'Температура комфортная, но может быть прохладно вечером',
+        mainRecommendation: 'Seasonal clothing',
+        accessories: ['Light jacket', 'Umbrella'],
+        description: 'Temperature is comfortable, but it might be cool in the evening',
       );
     } else if (temperature > 5) {
       return ClothingRecommendation(
-        mainRecommendation: 'Теплая одежда',
-        accessories: ['Теплая куртка', 'Шарф', 'Перчатки'],
-        description: 'На улице прохладно, одевайтесь теплее',
+        mainRecommendation: 'Warm clothing',
+        accessories: ['Warm jacket', 'Scarf', 'Gloves'],
+        description: 'It\'s cool outside, dress warmer',
       );
     } else {
       return ClothingRecommendation(
-        mainRecommendation: 'Зимняя одежда',
-        accessories: ['Теплая куртка', 'Шапка', 'Шарф', 'Перчатки', 'Термобелье'],
-        description: 'На улице холодно, одевайтесь очень тепло',
+        mainRecommendation: 'Winter clothing',
+        accessories: ['Warm jacket', 'Hat', 'Scarf', 'Gloves', 'Thermal underwear'],
+        description: 'It\'s cold outside, dress very warmly',
       );
     }
   }

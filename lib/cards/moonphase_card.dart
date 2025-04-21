@@ -18,7 +18,7 @@ class MoonPhaseCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Фаза луны',
+              'Moon Phase',
               style: TextStyle(color: Colors.white60),
             ),
             SizedBox(height: 8),
@@ -29,11 +29,11 @@ class MoonPhaseCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Освещенность: ${moonIllumination.toStringAsFixed(0)} %',
+                      'Illumination: ${moonIllumination.toStringAsFixed(0)} %',
                       style: TextStyle(color: Colors.white),
                     ),
                     Text(
-                      'Фаза: ${(moonPhase)}',
+                      'Phase: ${(moonPhase)}',
                       style: TextStyle(color: Colors.white),
                     ),
                   ],

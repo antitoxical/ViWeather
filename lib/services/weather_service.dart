@@ -10,7 +10,7 @@ class WeatherService {
 
   Future<CurrentWeather> getCurrentWeather(String city) async {
     try {
-      final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1&lang=ru');
+      final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1');
       print('Request URL: $url');
       final response = await http.get(url).timeout(
         const Duration(seconds: 10),
@@ -30,6 +30,8 @@ class WeatherService {
 
         return CurrentWeather(
           location: data['location']['name'],
+          country: data['location']['country'],
+          region: data['location']['region'],
           temperature: data['current']['temp_c'].toDouble(),
           condition: data['current']['condition']['text'],
           maxTemp: data['forecast']['forecastday'][0]['day']['maxtemp_c'].toDouble(),
@@ -66,7 +68,7 @@ class WeatherService {
   }
 
   Future<CurrentWeatherDetails> getCurrentWeatherDetails(String city) async {
-    final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1&lang=ru');
+    final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -111,7 +113,7 @@ class WeatherService {
   }
 
   Future<List<HourlyForecast>> getHourlyForecast(String city) async {
-    final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1&lang=ru');
+    final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1');
     print('Request URL: $url');
     final response = await http.get(url);
 
@@ -138,7 +140,7 @@ class WeatherService {
   }
 
   Future<List<DailyForecast>> getDailyForecast(String city) async {
-    final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=5&lang=ru');
+    final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=5');
     print('Request URL: $url');
     final response = await http.get(url);
 
@@ -171,7 +173,7 @@ class WeatherService {
 
   Future<Map<String, double>> getCityCoordinates(String city) async {
     try {
-      final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1&lang=ru');
+      final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1');
       print('Request URL for coordinates: $url');
       final response = await http.get(url).timeout(
         const Duration(seconds: 10),
@@ -205,7 +207,7 @@ class WeatherService {
 
   Future<int> getAirQuality(String city) async {
     try {
-      final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1&aqi=yes&lang=ru');
+      final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1&aqi=yes');
       print('Request URL for AQI: $url');
       final response = await http.get(url);
 

@@ -19,7 +19,7 @@ class TemperatureChart extends StatelessWidget {
     // Проверяем, что у нас есть все 24 значения температуры
     if (temperatures.length != 24) {
       print('Warning: Expected 24 temperature values, got ${temperatures.length}');
-      return const Center(child: Text('Недостаточно данных для построения графика'));
+      return const Center(child: Text('Insufficient data to build the chart'));
     }
 
     // Инициализация timezone данных
@@ -52,7 +52,7 @@ class TemperatureChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Температура по часам',
+            'Temperature by Hour',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,

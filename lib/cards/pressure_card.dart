@@ -18,7 +18,7 @@ class PressureCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Давление',
+              'Pressure',
               style: TextStyle(color: Colors.white60),
             ),
             SizedBox(height: 8),
@@ -29,12 +29,12 @@ class PressureCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${pressure.toStringAsFixed(0)} гПа',
+                      '${pressure.toStringAsFixed(0)} hPa',
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Нормальное давление',
+                      'Normal pressure',
                       style: TextStyle(color: Colors.white60),
                     ),
                   ],

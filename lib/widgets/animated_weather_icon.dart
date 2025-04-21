@@ -42,17 +42,17 @@ class _AnimatedWeatherIconState extends State<AnimatedWeatherIcon> with SingleTi
 
   IconData _getWeatherIcon(String condition) {
     final lowerCondition = condition.toLowerCase();
-    if (lowerCondition.contains('солн')) {
+    if (lowerCondition.contains('sun') || lowerCondition.contains('clear')) {
       return Icons.wb_sunny;
-    } else if (lowerCondition.contains('дожд') || lowerCondition.contains('лив')) {
+    } else if (lowerCondition.contains('rain') || lowerCondition.contains('drizzle')) {
       return Icons.water_drop;
-    } else if (lowerCondition.contains('снег')) {
+    } else if (lowerCondition.contains('snow')) {
       return Icons.ac_unit;
-    } else if (lowerCondition.contains('облач') || lowerCondition.contains('пасмур')) {
+    } else if (lowerCondition.contains('cloud') || lowerCondition.contains('overcast')) {
       return Icons.cloud;
-    } else if (lowerCondition.contains('гроз')) {
+    } else if (lowerCondition.contains('thunder') || lowerCondition.contains('storm')) {
       return Icons.flash_on;
-    } else if (lowerCondition.contains('туман')) {
+    } else if (lowerCondition.contains('mist') || lowerCondition.contains('fog')) {
       return Icons.foggy;
     }
     return Icons.wb_sunny;

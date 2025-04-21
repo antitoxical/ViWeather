@@ -16,7 +16,7 @@ class PrecipitationCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Осадки',
+              'Precipitation',
               style: TextStyle(color: Colors.white60),
             ),
             SizedBox(height: 8),
@@ -25,7 +25,7 @@ class PrecipitationCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${precipitation.toStringAsFixed(1)} мм',
+                    '${precipitation.toStringAsFixed(1)} mm',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),

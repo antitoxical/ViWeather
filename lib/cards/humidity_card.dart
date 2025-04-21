@@ -20,7 +20,7 @@ class HumidityCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Влажность',
+              'Humidity',
               style: TextStyle(color: Colors.white60),
             ),
             SizedBox(height: 8),
@@ -36,7 +36,7 @@ class HumidityCard extends StatelessWidget {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Точка росы: ${dewPoint.toStringAsFixed(1)}°',
+                      'Dew point: ${dewPoint.toStringAsFixed(1)}°',
                       style: TextStyle(color: Colors.white60),
                     ),
                   ],

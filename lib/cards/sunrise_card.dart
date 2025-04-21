@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:viweather1/services/weather_service.dart';
+import 'package:intl/intl.dart';
 
 class SunriseSunsetCard extends StatelessWidget {
   final DateTime sunrise;
@@ -10,6 +11,10 @@ class SunriseSunsetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final timeFormat = DateFormat('HH:mm');
+    final sunriseTime = timeFormat.format(sunrise);
+    final sunsetTime = timeFormat.format(sunset);
+
     return Card(
       color: Colors.grey[900],
       child: Padding(
@@ -17,7 +22,7 @@ class SunriseSunsetCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Восход/Закат', style: TextStyle(color: Colors.white60)),
+            Text('Sunrise/Sunset', style: TextStyle(color: Colors.white60)),
             SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -25,8 +30,8 @@ class SunriseSunsetCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Восход: $sunrise', style: TextStyle(color: Colors.white)),
-                    Text('Закат: $sunset', style: TextStyle(color: Colors.white)),
+                    Text('Sunrise: $sunriseTime', style: TextStyle(color: Colors.white)),
+                    Text('Sunset: $sunsetTime', style: TextStyle(color: Colors.white)),
                   ],
                 ),
                 Icon(Icons.wb_sunny, color: Colors.orange),

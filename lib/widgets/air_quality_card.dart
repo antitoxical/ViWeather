@@ -20,12 +20,12 @@ class AirQualityCard extends StatelessWidget {
   }
 
   String _getAQIDescription(int aqi) {
-    if (aqi <= 50) return 'Хорошее';
-    if (aqi <= 100) return 'Умеренное';
-    if (aqi <= 150) return 'Нездоровое для чувствительных групп';
-    if (aqi <= 200) return 'Нездоровое';
-    if (aqi <= 300) return 'Очень нездоровое';
-    return 'Опасное';
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy for sensitive groups';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very unhealthy';
+    return 'Hazardous';
   }
 
   @override
@@ -41,7 +41,7 @@ class AirQualityCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Качество воздуха',
+              'Air Quality',
               style: TextStyle(color: Colors.white60),
             ),
             const SizedBox(height: 8),
@@ -71,7 +71,7 @@ class AirQualityCard extends StatelessWidget {
                 Icon(
                   Icons.air,
                   color: color,
-                  size: 40,
+                  size: 30,
                 ),
               ],
             ),

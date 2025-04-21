@@ -31,7 +31,7 @@ class ClothingRecommendationCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Рекомендации по одежде',
+                  'Clothing Recommendations',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -59,7 +59,7 @@ class ClothingRecommendationCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Рекомендуемые аксессуары:',
+              'Recommended Accessories:',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,

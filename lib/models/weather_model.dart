@@ -1,5 +1,7 @@
 class CurrentWeather {
   final String location;
+  final String country;
+  final String region;
   final double temperature;
   final String condition;
   final double maxTemp;
@@ -8,6 +10,8 @@ class CurrentWeather {
 
   CurrentWeather({
     required this.location,
+    required this.country,
+    required this.region,
     required this.temperature,
     required this.condition,
     required this.maxTemp,

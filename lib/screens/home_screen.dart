@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await fetchWeatherDataByCoordinates(position.latitude, position.longitude);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка получения местоположения: $e')),
+        SnackBar(content: Text('Error getting location: $e')),
       );
     }
   }
@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       print('Error fetching weather data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка получения данных о погоде: $e')),
+        SnackBar(content: Text('Error getting weather data: $e')),
       );
     }
   }
@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Error fetching weather data: $e');
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Город не найден. Попробуйте снова.')),
+        SnackBar(content: Text('Error getting weather data: $e')),
       );
     }
   }
@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: TextField(
                             controller: _cityController,
                             decoration: InputDecoration(
-                              labelText: 'Введите название города',
+                              labelText: 'Enter city name',
                               filled: true,
                               fillColor: Colors.white.withOpacity(0.2),
                               border: OutlineInputBorder(
@@ -154,11 +154,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               fetchWeatherData(city);
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Введите название города')),
+                                SnackBar(content: Text('Please enter a city name')),
                               );
                             }
                           },
-                          child: Text('Поиск'),
+                          child: Text('Search'),
                         ),
                       ],
                     ),
@@ -183,13 +183,34 @@ class _HomeScreenState extends State<HomeScreen> {
                                       fontSize: 16,
                                     ),
                                   ),
-                                  Text(
-                                    currentWeather!.location,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        currentWeather!.location,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 32,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      if (currentWeather!.region.isNotEmpty)
+                                        Text(
+                                          '${currentWeather!.region}, ${currentWeather!.country}',
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(0.7),
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      if (currentWeather!.region.isEmpty)
+                                        Text(
+                                          currentWeather!.country,
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(0.7),
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -203,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 size: 80,
                               ),
                               Text(
-                                '${currentWeather!.temperature}°',
+                                '${currentWeather!.temperature.toStringAsFixed(0)}°',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 64,
@@ -212,18 +233,22 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ],
                           ),
-                          Text(
-                            currentWeather!.condition,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
+                          Center(
+                            child: Text(
+                              currentWeather!.condition,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                              ),
                             ),
                           ),
-                          Text(
-                            'H:${currentWeather!.maxTemp}° L:${currentWeather!.minTemp}°',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
+                          Center(
+                            child: Text(
+                              'H:${currentWeather!.maxTemp.toStringAsFixed(0)}° L:${currentWeather!.minTemp.toStringAsFixed(0)}°',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                              ),
                             ),
                           ),
                         ],
@@ -232,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   else if (_isLoading)
                     const Center(child: CircularProgressIndicator())
                   else
-                    const Center(child: Text('Введите название города')),
+                    const Center(child: Text('Please enter a city name')),
 
                   if (dailyForecast != null)
                     Padding(
@@ -276,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     ),
                                     Text(
-                                      '${forecast.maxTemp}°/${forecast.minTemp}°',
+                                      '${forecast.maxTemp.toStringAsFixed(0)}°/${forecast.minTemp.toStringAsFixed(0)}°',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 18,
@@ -337,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               margin: const EdgeInsets.only(bottom: 16),
                               child: AirQualityCard(
                                 aqi: airQualityIndex,
-                                description: 'Текущее качество воздуха в вашем регионе',
+                                description: 'Current air quality in your region',
                               ),
                             ),
 
@@ -391,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             margin: const EdgeInsets.only(bottom: 16),
                             child: PrecipitationCard(
                               precipitation: currentWeatherDetails!.precipitation,
-                              description: 'Следующий снегопад ожидается в воскресенье и составит 12 мм.',
+                              description: 'Next snowfall is expected on Sunday and will be 12 mm.',
                             ),
                           ),
 

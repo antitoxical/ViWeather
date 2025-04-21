@@ -22,7 +22,7 @@ class WindCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Ветер',
+              'Wind',
               style: TextStyle(color: Colors.white60),
             ),
             SizedBox(height: 8),
@@ -33,17 +33,17 @@ class WindCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Скорость: ${windSpeed.toStringAsFixed(1)} км/ч',
+                      'Speed: ${windSpeed.toStringAsFixed(1)} km/h',
                       style: TextStyle(color: Colors.white),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Порывы: ${windGusts.toStringAsFixed(1)} км/ч',
+                      'Gusts: ${windGusts.toStringAsFixed(1)} km/h',
                       style: TextStyle(color: Colors.white),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'Направление: $windDirection',
+                      'Direction: $windDirection',
                       style: TextStyle(color: Colors.white),
                     ),
                   ],
