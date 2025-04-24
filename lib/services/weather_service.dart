@@ -10,41 +10,17 @@ class WeatherService {
 
   Future<CurrentWeather> getCurrentWeather(String city) async {
     try {
-      final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1');
-      print('Request URL: $url');
-      final response = await http.get(url).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw Exception('Превышено время ожидания ответа от сервера');
-        },
-      );
-
+      final url = '$baseUrl/forecast.json?key=$apiKey&q=$city&days=1&aqi=yes';
+      final response = await http.get(Uri.parse(url));
+      
       if (response.statusCode == 200) {
-        final decodedBody = utf8.decode(response.bodyBytes);
-        final data = json.decode(decodedBody);
-        print('API Response: $data');
-
-        if (data['location'] == null || data['current'] == null || data['forecast'] == null) {
-          throw Exception('Данные о погоде отсутствуют');
-        }
-
-        return CurrentWeather(
-          location: data['location']['name'],
-          country: data['location']['country'],
-          region: data['location']['region'],
-          temperature: data['current']['temp_c'].toDouble(),
-          condition: data['current']['condition']['text'],
-          maxTemp: data['forecast']['forecastday'][0]['day']['maxtemp_c'].toDouble(),
-          minTemp: data['forecast']['forecastday'][0]['day']['mintemp_c'].toDouble(),
-          timezone: data['location']['tz_id'],
-        );
+        final data = json.decode(response.body);
+        return CurrentWeather.fromJson(data);
       } else {
-        print('API Error Response: ${response.body}');
-        throw Exception('Ошибка получения данных: ${response.body}');
+        throw Exception('Failed to load weather data');
       }
     } catch (e) {
-      print('Error in getCurrentWeather: $e');
-      rethrow;
+      throw Exception('Error getting weather data: $e');
     }
   }
 

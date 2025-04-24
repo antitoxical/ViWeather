@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'dart:ui';  // Добавляем импорт для ImageFilter
 import 'package:viweather1/models/weather_model.dart';
 import 'package:viweather1/services/weather_service.dart';
 import 'package:viweather1/services/location_service.dart';
 import 'package:viweather1/widgets/temperature_chart.dart';
 import 'package:viweather1/widgets/weather_map.dart';
-import 'package:viweather1/widgets/air_quality_card.dart';
+import 'package:viweather1/cards/air_quality_card.dart';
 import 'package:viweather1/widgets/animated_weather_icon.dart';
+import 'package:viweather1/widgets/animated_weather_background.dart';
 import '../cards/humidity_card.dart';
 import '../cards/moonphase_card.dart';
 import '../cards/precipitation_card.dart';
 import '../cards/pressure_card.dart';
 import '../cards/sunrise_card.dart';
 import '../cards/wind_card.dart';
-import 'package:viweather1/widgets/clothing_recommendation_card.dart';
+import 'package:viweather1/cards/clothing_recommendation_card.dart';
+import 'package:flutter/rendering.dart';
+import 'package:viweather1/widgets/weather_card_base.dart';
+
+import '../theme/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -105,22 +111,51 @@ class _HomeScreenState extends State<HomeScreen> {
     _getCurrentLocation();
   }
 
+  bool _isDayTime() {
+    if (currentWeather == null) return true;
+    
+    final now = DateTime.now();
+    // Преобразуем строку timezone в число, убирая все нечисловые символы
+    final timezoneStr = currentWeather!.timezone.replaceAll(RegExp(r'[^0-9-]'), '');
+    final timezone = int.tryParse(timezoneStr) ?? 0;
+    final localTime = now.add(Duration(hours: timezone));
+    
+    return localTime.hour >= 6 && localTime.hour < 20;
+  }
+
+  Widget _buildWeatherCard({required Widget child}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(15),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.2),
+              width: 0.5,
+            ),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDay = _isDayTime();
+    
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.blue.shade900,
-                  Colors.blue.shade500,
-                ],
-              ),
-            ),
+          AnimatedWeatherBackground(
+            weatherCondition: currentWeather?.condition ?? 'Clear',
+            isDay: isDay,
           ),
           SafeArea(
             child: SingleChildScrollView(
@@ -138,10 +173,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             decoration: InputDecoration(
                               labelText: 'Enter city name',
                               filled: true,
-                              fillColor: Colors.white.withOpacity(0.2),
+                              fillColor: Colors.white.withOpacity(0.15),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.white.withOpacity(0.2),
+                                ),
                               ),
+                              labelStyle: TextStyle(color: Colors.white),
                             ),
                             style: TextStyle(color: Colors.white),
                           ),
@@ -158,7 +197,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               );
                             }
                           },
-                          child: Text('Search'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white.withOpacity(0.2),
+                          ),
+                          child: Text('Search', style: TextStyle(color: Colors.white)),
                         ),
                       ],
                     ),
@@ -170,68 +212,40 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'MY LOCATION',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.7),
-                                      fontSize: 16,
-                                    ),
+                          Center(
+                            child: Column(
+                              children: [
+                                Text(
+                                  currentWeather!.location,
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w300,
                                   ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        currentWeather!.location,
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 32,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      if (currentWeather!.region.isNotEmpty)
-                                        Text(
-                                          '${currentWeather!.region}, ${currentWeather!.country}',
-                                          style: TextStyle(
-                                            color: Colors.white.withOpacity(0.7),
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      if (currentWeather!.region.isEmpty)
-                                        Text(
-                                          currentWeather!.country,
-                                          style: TextStyle(
-                                            color: Colors.white.withOpacity(0.7),
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              AnimatedWeatherIcon(
-                                condition: currentWeather!.condition,
-                                size: 80,
-                              ),
-                              Text(
-                                '${currentWeather!.temperature.toStringAsFixed(0)}°',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 64,
-                                  fontWeight: FontWeight.w300,
+                                  textAlign: TextAlign.center,
                                 ),
+                                if (currentWeather!.region != null && currentWeather!.country != null)
+                                  Text(
+                                    '${currentWeather!.region}, ${currentWeather!.country}',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Center(
+                            child: Text(
+                              '${currentWeather!.temperature.toStringAsFixed(0)}°',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 96,
+                                fontWeight: FontWeight.w200,
                               ),
-                            ],
+                            ),
                           ),
                           Center(
                             child: Text(
@@ -239,6 +253,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 24,
+                                fontWeight: FontWeight.w300,
                               ),
                             ),
                           ),
@@ -247,187 +262,196 @@ class _HomeScreenState extends State<HomeScreen> {
                               'H:${currentWeather!.maxTemp.toStringAsFixed(0)}° L:${currentWeather!.minTemp.toStringAsFixed(0)}°',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 18,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    )
-                  else if (_isLoading)
-                    const Center(child: CircularProgressIndicator())
-                  else
-                    const Center(child: Text('Please enter a city name')),
+                          SizedBox(height: 20),
 
-                  if (dailyForecast != null)
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'DAILY FORECAST',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                          if (dailyForecast != null)
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Container(
+                                width: double.infinity,
+                                child: WeatherCardBase(
+                                  condition: currentWeather?.condition ?? 'Clear',
+                                  isDay: isDay,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'DAILY FORECAST',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      ListView.builder(
+                                        shrinkWrap: true,
+                                        physics: NeverScrollableScrollPhysics(),
+                                        itemCount: dailyForecast!.length,
+                                        itemBuilder: (context, index) {
+                                          final forecast = dailyForecast![index];
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    AnimatedWeatherIcon(
+                                                      condition: forecast.condition,
+                                                      size: 24,
+                                                    ),
+                                                    SizedBox(width: 8),
+                                                    Text(
+                                                      DateFormat.E().format(DateTime.parse(forecast.day)),
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 18,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                Text(
+                                                  '${forecast.maxTemp.toStringAsFixed(0)}°/${forecast.minTemp.toStringAsFixed(0)}°',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: dailyForecast!.length,
-                            itemBuilder: (context, index) {
-                              final forecast = dailyForecast![index];
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        AnimatedWeatherIcon(
-                                          condition: forecast.condition,
-                                          size: 24,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(
-                                          DateFormat.E().format(DateTime.parse(forecast.day)),
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                      ],
+
+                          if (currentWeatherDetails != null)
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'DETAILED INFORMATION',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    Text(
-                                      '${forecast.maxTemp.toStringAsFixed(0)}°/${forecast.minTemp.toStringAsFixed(0)}°',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  if (cityCoordinates != null)
+                                  Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    child: AirQualityCard(
+                                      aqi: airQualityIndex,
+                                      description: 'Current air quality in your region',
+                                      condition: currentWeather!.condition,
+                                      isDay: isDay,
+                                    ),
+                                  ),
+
+                                  Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    child: WindCard(
+                                      windSpeed: currentWeatherDetails!.windSpeed,
+                                      windGusts: currentWeatherDetails!.windGusts,
+                                      windDirection: currentWeatherDetails!.windDirection,
+                                      condition: currentWeather!.condition,
+                                      isDay: isDay,
+                                    ),
+                                  ),
+
+                                  Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    child: HumidityCard(
+                                      humidity: currentWeatherDetails!.humidity,
+                                      dewPoint: currentWeatherDetails!.dewPoint,
+                                      condition: currentWeather!.condition,
+                                      isDay: isDay,
+                                    ),
+                                  ),
+
+                                  Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    child: PressureCard(
+                                      pressure: currentWeatherDetails!.pressure,
+                                      condition: currentWeather!.condition,
+                                      isDay: isDay,
+                                    ),
+                                  ),
+
+                                  Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    child: SunriseSunsetCard(
+                                      sunrise: currentWeatherDetails!.sunrise,
+                                      sunset: currentWeatherDetails!.sunset,
+                                      condition: currentWeather!.condition,
+                                      isDay: isDay,
+                                    ),
+                                  ),
+
+                                  Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    child: MoonPhaseCard(
+                                      moonIllumination: currentWeatherDetails!.moonIllumination,
+                                      moonPhase: currentWeatherDetails!.moonPhase,
+                                      condition: currentWeather!.condition,
+                                      isDay: isDay,
+                                    ),
+                                  ),
+
+                                  Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    child: PrecipitationCard(
+                                      precipitation: currentWeatherDetails!.precipitation,
+                                      description: 'Next snowfall is expected on Sunday and will be 12 mm.',
+                                      condition: currentWeather!.condition,
+                                      isDay: isDay,
+                                    ),
+                                  ),
+
+                                  Container(
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    child: ClothingRecommendationCard(
+                                      temperature: currentWeather!.temperature,
+                                      condition: currentWeather!.condition,
+                                      isDay: isDay,
+                                    ),
+                                  ),
+
+                                  Container(
+                                    height: 200,
+                                    width: double.infinity,
+                                    margin: const EdgeInsets.only(bottom: 16),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: WeatherMap(
+                                        latitude: cityCoordinates!['latitude']!,
+                                        longitude: cityCoordinates!['longitude']!,
                                       ),
                                     ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  if (currentWeatherDetails != null)
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'DETAILED INFORMATION',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          if (cityCoordinates != null)
-                            Container(
-                              height: 200,
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 16),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: WeatherMap(
-                                  latitude: cityCoordinates!['latitude']!,
-                                  longitude: cityCoordinates!['longitude']!,
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
-
-                          if (hourlyForecast != null)
-                            Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 16),
-                              child: TemperatureChart(
-                                temperatures: hourlyForecast!.map((forecast) => forecast.temperature).toList(),
-                                timezone: currentWeather!.timezone,
-                              ),
-                            ),
-
-                          if (currentWeather != null)
-                            Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 16),
-                              child: AirQualityCard(
-                                aqi: airQualityIndex,
-                                description: 'Current air quality in your region',
-                              ),
-                            ),
-
-                          Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: WindCard(
-                              windSpeed: currentWeatherDetails!.windSpeed,
-                              windGusts: currentWeatherDetails!.windGusts,
-                              windDirection: currentWeatherDetails!.windDirection,
-                            ),
-                          ),
-
-                          Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: HumidityCard(
-                              humidity: currentWeatherDetails!.humidity,
-                              dewPoint: currentWeatherDetails!.dewPoint,
-                            ),
-                          ),
-
-                          Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: PressureCard(
-                              pressure: currentWeatherDetails!.pressure,
-                            ),
-                          ),
-
-                          Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: SunriseSunsetCard(
-                              sunrise: currentWeatherDetails!.sunrise,
-                              sunset: currentWeatherDetails!.sunset,
-                            ),
-                          ),
-
-                          Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: MoonPhaseCard(
-                              moonIllumination: currentWeatherDetails!.moonIllumination,
-                              moonPhase: currentWeatherDetails!.moonPhase,
-                            ),
-                          ),
-
-                          Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: PrecipitationCard(
-                              precipitation: currentWeatherDetails!.precipitation,
-                              description: 'Next snowfall is expected on Sunday and will be 12 mm.',
-                            ),
-                          ),
-
-                          Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: ClothingRecommendationCard(
-                              temperature: currentWeather!.temperature,
-                              condition: currentWeather!.condition,
-                            ),
-                          ),
                         ],
                       ),
                     ),

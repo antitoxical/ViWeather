@@ -1,23 +1,36 @@
 class CurrentWeather {
   final String location;
-  final String country;
-  final String region;
+  final String? region;
+  final String? country;
   final double temperature;
-  final String condition;
   final double maxTemp;
   final double minTemp;
+  final String condition;
   final String timezone;
 
   CurrentWeather({
     required this.location,
-    required this.country,
-    required this.region,
+    this.region,
+    this.country,
     required this.temperature,
-    required this.condition,
     required this.maxTemp,
     required this.minTemp,
+    required this.condition,
     required this.timezone,
   });
+
+  factory CurrentWeather.fromJson(Map<String, dynamic> json) {
+    return CurrentWeather(
+      location: json['location']['name'] ?? '',
+      region: json['location']['region'],
+      country: json['location']['country'],
+      temperature: (json['current']['temp_c'] ?? 0.0).toDouble(),
+      maxTemp: (json['forecast']['forecastday'][0]['day']['maxtemp_c'] ?? 0.0).toDouble(),
+      minTemp: (json['forecast']['forecastday'][0]['day']['mintemp_c'] ?? 0.0).toDouble(),
+      condition: json['current']['condition']['text'] ?? '',
+      timezone: json['location']['tz_id'] ?? '',
+    );
+  }
 }
 
 class HourlyForecast {
