@@ -369,6 +369,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       windGusts: currentWeatherDetails!.windGusts,
                                       windDirection: currentWeatherDetails!.windDirection,
                                       condition: currentWeather!.condition,
+                                      maxDailyWind: currentWeatherDetails!.maxDailyWind,
+                                      yesterdayMaxWind: currentWeatherDetails!.yesterdayMaxWind,
                                       isDay: isDay,
                                     ),
                                   ),

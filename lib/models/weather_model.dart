@@ -77,6 +77,8 @@ class CurrentWeatherDetails {
   final double cloudCover;
   final int chanceOfRain;
   final int chanceOfSnow;
+  final double maxDailyWind;
+  final double yesterdayMaxWind;
 
   CurrentWeatherDetails({
     required this.temperature,
@@ -97,5 +99,7 @@ class CurrentWeatherDetails {
     required this.cloudCover,
     required this.chanceOfRain,
     required this.chanceOfSnow,
+    required this.maxDailyWind,
+    required this.yesterdayMaxWind,
   });
 }

@@ -44,7 +44,7 @@ class WeatherService {
   }
 
   Future<CurrentWeatherDetails> getCurrentWeatherDetails(String city) async {
-    final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=1');
+    final url = Uri.parse('$baseUrl/forecast.json?key=$apiKey&q=$city&days=2'); // Запрашиваем 2 дня данных
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
@@ -60,6 +60,15 @@ class WeatherService {
 
       if (sunrise == null || sunset == null) {
         throw Exception('Неверный формат времени восхода или заката');
+      }
+
+      // Получаем максимальную скорость ветра за сегодня
+      final maxWindToday = data['forecast']['forecastday'][0]['day']['maxwind_kph'].toDouble();
+
+      // Получаем максимальную скорость ветра за вчера (если есть данные)
+      double maxWindYesterday = 0.0;
+      if (data['forecast']['forecastday'].length > 1) {
+        maxWindYesterday = data['forecast']['forecastday'][1]['day']['maxwind_kph'].toDouble();
       }
 
       return CurrentWeatherDetails(
@@ -81,6 +90,8 @@ class WeatherService {
         cloudCover: data['current']['cloud'].toDouble(),
         chanceOfRain: data['forecast']['forecastday'][0]['day']['daily_chance_of_rain'] ?? 0,
         chanceOfSnow: data['forecast']['forecastday'][0]['day']['daily_chance_of_snow'] ?? 0,
+        maxDailyWind: maxWindToday,
+        yesterdayMaxWind: maxWindYesterday,
       );
     } else {
       print('API Error Response: ${response.body}');
