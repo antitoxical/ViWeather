@@ -11,168 +11,164 @@ class PressureDetailScreen extends StatelessWidget {
     required this.isDay,
   });
 
-  @override
-  Widget build(BuildContext context) {
-    final pressureLevel = _getPressureLevel(pressure);
-
-    return Scaffold(
-      backgroundColor: isDay ? AppColors.clearDayStart : AppColors.clearNightEnd,
-      appBar: AppBar(
-        title: const Text('Atmospheric Pressure'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: IconThemeData(
-          color: isDay ? AppColors.textPrimary : Colors.white,
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPressureValueSection(),
-            const SizedBox(height: 24),
-            _buildPressureLevelSection(pressureLevel),
-            const SizedBox(height: 24),
-            _buildPressureExplanationSection(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPressureValueSection() {
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Icon(
-              Icons.speed,
-              color: isDay ? AppColors.iconColor : Colors.white,
-              size: 48,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '${pressure.toStringAsFixed(0)} hPa',
-              style: TextStyle(
-                color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Atmospheric Pressure',
-              style: TextStyle(
-                color: isDay ? AppColors.textSecondary : Colors.white70,
-                fontSize: 18,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPressureLevelSection(String pressureLevel) {
-    Color levelColor;
-
-    if (pressureLevel == 'Low') {
-      levelColor = Colors.red;
-    } else if (pressureLevel == 'High') {
-      levelColor = Colors.blue;
-    } else {
-      levelColor = Colors.green;
-    }
-
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Pressure Level',
-              style: TextStyle(
-                color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: Text(
-                pressureLevel,
-                style: TextStyle(
-                  color: isDay ? levelColor : Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _getPressureDescription(pressureLevel),
-              style: TextStyle(
-                color: isDay ? AppColors.textSecondary : Colors.white70,
-                fontSize: 16,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPressureExplanationSection() {
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'About Atmospheric Pressure',
-              style: TextStyle(
-                color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Atmospheric pressure is the force exerted by the weight of the atmosphere. '
-                  'Standard pressure at sea level is 1013.25 hPa. Changes in pressure often indicate upcoming weather changes.',
-              style: TextStyle(
-                color: isDay ? AppColors.textSecondary : Colors.white70,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   String _getPressureLevel(double pressure) {
     if (pressure < 1000) return 'Low';
-    if (pressure > 1020) return 'High';
-    return 'Normal';
+    if (pressure < 1013) return 'Below Normal';
+    if (pressure < 1020) return 'Normal';
+    if (pressure < 1030) return 'Above Normal';
+    return 'High';
   }
 
   String _getPressureDescription(String level) {
     switch (level) {
       case 'Low':
-        return 'Low pressure often brings clouds, wind and precipitation.';
+        return 'Low pressure often brings unsettled weather with clouds and precipitation.';
+      case 'Below Normal':
+        return 'Slightly below normal pressure may indicate changing weather conditions.';
+      case 'Normal':
+        return 'Normal pressure indicates stable weather conditions.';
+      case 'Above Normal':
+        return 'Slightly above normal pressure usually brings clear, dry weather.';
       case 'High':
-        return 'High pressure usually means fair weather with clear skies.';
+        return 'High pressure typically brings clear skies and stable weather.';
       default:
-        return 'Normal pressure with typical weather conditions.';
+        return '';
     }
+  }
+
+  String _getPressureEffects(String level) {
+    switch (level) {
+      case 'Low':
+        return 'May cause headaches and fatigue in sensitive individuals.';
+      case 'Below Normal':
+        return 'Generally well-tolerated by most people.';
+      case 'Normal':
+        return 'Optimal conditions for most activities.';
+      case 'Above Normal':
+        return 'May improve mood and energy levels.';
+      case 'High':
+        return 'Excellent conditions for outdoor activities.';
+      default:
+        return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pressureLevel = _getPressureLevel(pressure);
+    final description = _getPressureDescription(pressureLevel);
+    final effects = _getPressureEffects(pressureLevel);
+
+    return Scaffold(
+      backgroundColor: isDay ? AppColors.clearDayStart : AppColors.clearNightEnd,
+      appBar: AppBar(
+        title: const Text('Pressure',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w300,
+            )),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            _buildMainCard(pressureLevel),
+            const SizedBox(height: 16),
+            _buildInfoCard('Weather Impact', description, Icons.cloud),
+            const SizedBox(height: 16),
+            _buildInfoCard('Health Effects', effects, Icons.health_and_safety),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainCard(String level) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Text(
+            '${pressure.toStringAsFixed(0)}',
+            style: TextStyle(
+              color: isDay ? AppColors.textPrimary : Colors.white,
+              fontSize: 72,
+              fontWeight: FontWeight.w200,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'hPa',
+            style: TextStyle(
+              color: isDay ? AppColors.textPrimary : Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            level,
+            style: TextStyle(
+              color: isDay ? AppColors.textSecondary : Colors.white70,
+              fontSize: 16,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(String title, String content, IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                color: isDay ? AppColors.textPrimary : Colors.white,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDay ? AppColors.textPrimary : Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            content,
+            style: TextStyle(
+              color: isDay ? AppColors.textSecondary : Colors.white70,
+              fontSize: 16,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

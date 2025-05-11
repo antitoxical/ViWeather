@@ -5,12 +5,14 @@ class PrecipitationDetailScreen extends StatelessWidget {
   final double precipitation;
   final String description;
   final bool isDay;
+  final double? probability;
 
   const PrecipitationDetailScreen({
     super.key,
     required this.precipitation,
     required this.description,
     required this.isDay,
+    this.probability,
   });
 
   @override
@@ -18,151 +20,118 @@ class PrecipitationDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: isDay ? AppColors.clearDayStart : AppColors.clearNightEnd,
       appBar: AppBar(
-        title: const Text('Precipitation'),
+        title: const Text('Precipitation',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w300,
+            )),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(
-          color: isDay ? AppColors.textPrimary : Colors.white,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
         ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildPrecipitationAmountSection(),
-            const SizedBox(height: 24),
-            _buildPrecipitationDescriptionSection(),
-            const SizedBox(height: 24),
-            _buildPrecipitationTypesSection(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPrecipitationAmountSection() {
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Icon(
-              Icons.water_drop,
-              color: isDay ? AppColors.iconColor : Colors.white,
-              size: 48,
-            ),
+            _buildMainCard(),
             const SizedBox(height: 16),
-            Text(
-              '${precipitation.toStringAsFixed(1)} mm',
-              style: TextStyle(
-                color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            _buildInfoCard('Description', description, Icons.info_outline),
+            if (probability != null) ...[
+              const SizedBox(height: 16),
+              _buildInfoCard('Probability', '${probability!.toStringAsFixed(0)}%', Icons.water_drop),
+            ],
+            const SizedBox(height: 24),
+            _buildTypesHeader(),
+            const SizedBox(height: 12),
+            _buildTypeCard('Rain', 'Liquid water droplets', Icons.beach_access),
             const SizedBox(height: 8),
-            Text(
-              'Precipitation Amount',
-              style: TextStyle(
-                color: isDay ? AppColors.textSecondary : Colors.white70,
-                fontSize: 18,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPrecipitationDescriptionSection() {
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Description',
-              style: TextStyle(
-                color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            _buildTypeCard('Snow', 'Ice crystals', Icons.ac_unit),
             const SizedBox(height: 8),
-            Text(
-              description,
-              style: TextStyle(
-                color: isDay ? AppColors.textSecondary : Colors.white70,
-                fontSize: 16,
-              ),
-            ),
+            _buildTypeCard('Sleet', 'Rain and snow mix', Icons.water),
+            const SizedBox(height: 8),
+            _buildTypeCard('Hail', 'Solid ice pellets', Icons.grain),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPrecipitationTypesSection() {
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Precipitation Types',
-              style: TextStyle(
-                color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildPrecipitationTypeItem('Rain', 'Liquid water droplets'),
-            const Divider(),
-            _buildPrecipitationTypeItem('Snow', 'Ice crystals'),
-            const Divider(),
-            _buildPrecipitationTypeItem('Sleet', 'Rain and snow mix'),
-            const Divider(),
-            _buildPrecipitationTypeItem('Hail', 'Solid ice pellets'),
-          ],
-        ),
+  Widget _buildMainCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
       ),
-    );
-  }
-
-  Widget _buildPrecipitationTypeItem(String type, String description) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
+      padding: const EdgeInsets.all(24),
+      child: Column(
         children: [
           Icon(
-            _getPrecipitationIcon(type),
-            color: isDay ? AppColors.iconColor : Colors.white,
+            Icons.water_drop,
+            color: isDay ? Colors.blue : Colors.lightBlue,
+            size: 72,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(height: 16),
+          Text(
+            '${precipitation.toStringAsFixed(1)} mm',
+            style: TextStyle(
+              color: isDay ? AppColors.textPrimary : Colors.white,
+              fontSize: 48,
+              fontWeight: FontWeight.w200,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Precipitation Amount',
+            style: TextStyle(
+              color: isDay ? AppColors.textSecondary : Colors.white70,
+              fontSize: 16,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(String title, String value, IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            color: isDay ? AppColors.textPrimary : Colors.white,
+            size: 24,
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  type,
+                  title,
                   style: TextStyle(
                     color: isDay ? AppColors.textPrimary : Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w300,
                   ),
                 ),
+                const SizedBox(height: 8),
                 Text(
-                  description,
+                  value,
                   style: TextStyle(
                     color: isDay ? AppColors.textSecondary : Colors.white70,
-                    fontSize: 14,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w300,
                   ),
                 ),
               ],
@@ -173,18 +142,55 @@ class PrecipitationDetailScreen extends StatelessWidget {
     );
   }
 
-  IconData _getPrecipitationIcon(String type) {
-    switch (type.toLowerCase()) {
-      case 'rain':
-        return Icons.beach_access;
-      case 'snow':
-        return Icons.ac_unit;
-      case 'sleet':
-        return Icons.water;
-      case 'hail':
-        return Icons.grain;
-      default:
-        return Icons.water_drop;
-    }
+  Widget _buildTypesHeader() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        'Precipitation Types',
+        style: TextStyle(
+          color: isDay ? AppColors.textPrimary : Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.w300,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypeCard(String name, String desc, IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      child: Row(
+        children: [
+          Icon(icon, color: isDay ? AppColors.textPrimary : Colors.white, size: 28),
+          const SizedBox(width: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                style: TextStyle(
+                  color: isDay ? AppColors.textPrimary : Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                desc,
+                style: TextStyle(
+                  color: isDay ? AppColors.textSecondary : Colors.white70,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

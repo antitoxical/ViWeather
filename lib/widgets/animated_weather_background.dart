@@ -104,6 +104,8 @@ class _AnimatedWeatherBackgroundState extends State<AnimatedWeatherBackground> w
         speed: 0.5 + math.Random().nextDouble() * 1,
         size: 50 + math.Random().nextDouble() * 100,
         opacity: 0.7 + math.Random().nextDouble() * 0.3,
+        xOffset: math.Random().nextDouble(),
+        lifetime: 20 + math.Random().nextDouble() * 20, // 20-40 секунд на проход
       ));
     }
   }
@@ -138,6 +140,7 @@ class _AnimatedWeatherBackgroundState extends State<AnimatedWeatherBackground> w
             fogParticles: _fogParticles,
             leaves: _leaves,
             animationValue: _controller.value,
+            controller: _controller,
           ),
           size: Size.infinite,
         );
@@ -156,6 +159,7 @@ class WeatherBackgroundPainter extends CustomPainter {
   final List<FogParticle> fogParticles;
   final List<Leaf> leaves;
   final double animationValue;
+  final AnimationController controller;
 
   WeatherBackgroundPainter({
     required this.weatherCondition,
@@ -167,6 +171,7 @@ class WeatherBackgroundPainter extends CustomPainter {
     required this.fogParticles,
     required this.leaves,
     required this.animationValue,
+    required this.controller,
   });
 
   @override
@@ -181,9 +186,14 @@ class WeatherBackgroundPainter extends CustomPainter {
     final paint = Paint()..shader = gradient.createShader(rect);
     canvas.drawRect(rect, paint);
 
-    // Рисуем облака
+    // АНИМИРОВАННЫЕ ОБЛАКА (плавное движение по времени)
+    final double time = (controller.lastElapsedDuration?.inMilliseconds ?? 0) / 1000.0;
     for (var cloud in clouds) {
-      _drawCloud(canvas, cloud, size);
+      double t = (time + cloud.xOffset * cloud.lifetime) % cloud.lifetime;
+      double progress = t / cloud.lifetime;
+      double totalWidth = size.width + cloud.size * 2;
+      double cloudX = -cloud.size + totalWidth * progress;
+      _drawCloud(canvas, cloud.copyWith(x: cloudX), size);
     }
 
     // Рисуем молнии
@@ -196,28 +206,35 @@ class WeatherBackgroundPainter extends CustomPainter {
     // Рисуем туман
     if (weatherCondition.toLowerCase().contains('fog')) {
       for (var particle in fogParticles) {
-        _drawFogParticle(canvas, particle, size);
+        double fogX = (particle.x + particle.speed * animationValue * size.width * 0.01) % (size.width + particle.size) - particle.size;
+        _drawFogParticle(canvas, particle.copyWith(x: fogX), size);
       }
     }
 
     // Рисуем листья
     if (weatherCondition.toLowerCase().contains('wind')) {
       for (var leaf in leaves) {
-        _drawLeaf(canvas, leaf, size);
+        double leafX = (leaf.x + leaf.speed * animationValue * size.width * 0.04) % (size.width + 20) - 20;
+        double leafY = (leaf.y + leaf.speed * animationValue * size.height * 0.01) % (size.height + 20) - 20;
+        double rotation = (leaf.rotation + animationValue * 60) % 360;
+        _drawLeaf(canvas, leaf.copyWith(x: leafX, y: leafY, rotation: rotation), size);
       }
     }
 
-    // Рисуем дождь
+    // АНИМИРОВАННЫЙ ДОЖДЬ (медленнее)
     if (weatherCondition.toLowerCase().contains('rain')) {
       for (var drop in rainDrops) {
-        _drawRainDrop(canvas, drop, size);
+        double dropY = (drop.y + drop.speed * animationValue * size.height * 0.08) % size.height;
+        _drawRainDrop(canvas, drop.x, dropY, size);
       }
     }
 
-    // Рисуем снег
+    // АНИМИРОВАННЫЙ СНЕГ (медленнее)
     if (weatherCondition.toLowerCase().contains('snow')) {
       for (var flake in snowFlakes) {
-        _drawSnowFlake(canvas, flake, size);
+        double flakeY = (flake.y + flake.speed * animationValue * size.height * 0.04) % size.height;
+        double flakeX = flake.x + math.sin(animationValue * 2 * math.pi + flake.y) * 6;
+        _drawSnowFlake(canvas, flake.copyWith(x: flakeX, y: flakeY), size);
       }
     }
   }
@@ -413,15 +430,15 @@ class WeatherBackgroundPainter extends CustomPainter {
     canvas.restore();
   }
 
-  void _drawRainDrop(Canvas canvas, RainDrop drop, Size size) {
+  void _drawRainDrop(Canvas canvas, double x, double y, Size size) {
     final paint = Paint()
       ..color = Colors.blue.withOpacity(0.6)
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
 
     canvas.drawLine(
-      Offset(drop.x, drop.y),
-      Offset(drop.x, drop.y + 10),
+      Offset(x, y),
+      Offset(x, y + 10),
       paint,
     );
   }
@@ -466,6 +483,15 @@ class SnowFlake {
     required this.speed,
     required this.size,
   });
+
+  SnowFlake copyWith({double? x, double? y, double? speed, double? size}) {
+    return SnowFlake(
+      x: x ?? this.x,
+      y: y ?? this.y,
+      speed: speed ?? this.speed,
+      size: size ?? this.size,
+    );
+  }
 }
 
 class Cloud {
@@ -474,6 +500,8 @@ class Cloud {
   final double speed;
   final double size;
   final double opacity;
+  final double xOffset;
+  final double lifetime;
 
   Cloud({
     required this.x,
@@ -481,7 +509,21 @@ class Cloud {
     required this.speed,
     required this.size,
     required this.opacity,
+    required this.xOffset,
+    required this.lifetime,
   });
+
+  Cloud copyWith({double? x, double? y, double? speed, double? size, double? opacity, double? xOffset, double? lifetime}) {
+    return Cloud(
+      x: x ?? this.x,
+      y: y ?? this.y,
+      speed: speed ?? this.speed,
+      size: size ?? this.size,
+      opacity: opacity ?? this.opacity,
+      xOffset: xOffset ?? this.xOffset,
+      lifetime: lifetime ?? this.lifetime,
+    );
+  }
 }
 
 class Lightning {
@@ -508,6 +550,15 @@ class FogParticle {
     required this.size,
     required this.speed,
   });
+
+  FogParticle copyWith({double? x, double? y, double? size, double? speed}) {
+    return FogParticle(
+      x: x ?? this.x,
+      y: y ?? this.y,
+      size: size ?? this.size,
+      speed: speed ?? this.speed,
+    );
+  }
 }
 
 class Leaf {
@@ -522,4 +573,13 @@ class Leaf {
     required this.speed,
     required this.rotation,
   });
+
+  Leaf copyWith({double? x, double? y, double? speed, double? rotation}) {
+    return Leaf(
+      x: x ?? this.x,
+      y: y ?? this.y,
+      speed: speed ?? this.speed,
+      rotation: rotation ?? this.rotation,
+    );
+  }
 } 

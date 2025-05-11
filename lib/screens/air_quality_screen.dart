@@ -47,128 +47,152 @@ class AirQualityDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: isDay ? AppColors.clearDayStart : AppColors.clearNightEnd,
       appBar: AppBar(
-        title: const Text('Air Quality Details'),
+        title: const Text('Air Quality',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w300,
+            )),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(
-          color: isDay ? AppColors.textPrimary : Colors.white,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
         ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildAQIIndicator(color, aqiDescription),
-            const SizedBox(height: 24),
-            _buildHealthEffects(healthEffects),
-            const SizedBox(height: 24),
-            _buildAQIScale(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAQIIndicator(Color color, String description) {
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Icon(
-              Icons.air,
-              color: color,
-              size: 48,
-            ),
+            _buildMainCard(color, aqiDescription),
             const SizedBox(height: 16),
-            Text(
-              aqi.toString(),
-              style: TextStyle(
-                color: color,
-                fontSize: 64,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Air Quality Index',
-              style: TextStyle(
-                color: isDay ? AppColors.textSecondary : Colors.white70,
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              description,
-              style: TextStyle(
-                color: color,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            _buildInfoCard('Health Effects', healthEffects, Icons.health_and_safety),
+            const SizedBox(height: 16),
+            _buildAQIScaleCard(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHealthEffects(String effects) {
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Health Effects',
-              style: TextStyle(
-                color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+  Widget _buildMainCard(Color color, String description) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Text(
+            aqi.toString(),
+            style: TextStyle(
+              color: color,
+              fontSize: 72,
+              fontWeight: FontWeight.w200,
             ),
-            const SizedBox(height: 12),
-            Text(
-              effects,
-              style: TextStyle(
-                color: isDay ? AppColors.textSecondary : Colors.white70,
-                fontSize: 16,
-              ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: TextStyle(
+              color: color,
+              fontSize: 24,
+              fontWeight: FontWeight.w300,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Air Quality Index',
+            style: TextStyle(
+              color: isDay ? AppColors.textSecondary : Colors.white70,
+              fontSize: 16,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildAQIScale() {
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'AQI Scale',
-              style: TextStyle(
+  Widget _buildInfoCard(String title, String content, IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
                 color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+                size: 24,
               ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDay ? AppColors.textPrimary : Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            content,
+            style: TextStyle(
+              color: isDay ? AppColors.textSecondary : Colors.white70,
+              fontSize: 16,
+              fontWeight: FontWeight.w300,
             ),
-            const SizedBox(height: 12),
-            _buildAQIScaleItem(0, 50, 'Good', const Color(0xFF4CAF50)),
-            _buildAQIScaleItem(51, 100, 'Moderate', const Color(0xFFFFC107)),
-            _buildAQIScaleItem(101, 150, 'Unhealthy for Groups', const Color(0xFFFF9800)),
-            _buildAQIScaleItem(151, 200, 'Unhealthy', const Color(0xFFF44336)),
-            _buildAQIScaleItem(201, 300, 'Very Unhealthy', const Color(0xFF9C27B0)),
-            _buildAQIScaleItem(301, 500, 'Hazardous', const Color(0xFF795548)),
-          ],
-        ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAQIScaleCard() {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.scale,
+                color: isDay ? AppColors.textPrimary : Colors.white,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'AQI Scale',
+                style: TextStyle(
+                  color: isDay ? AppColors.textPrimary : Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildAQIScaleItem(0, 50, 'Good', const Color(0xFF4CAF50)),
+          _buildAQIScaleItem(51, 100, 'Moderate', const Color(0xFFFFC107)),
+          _buildAQIScaleItem(101, 150, 'Unhealthy for Groups', const Color(0xFFFF9800)),
+          _buildAQIScaleItem(151, 200, 'Unhealthy', const Color(0xFFF44336)),
+          _buildAQIScaleItem(201, 300, 'Very Unhealthy', const Color(0xFF9C27B0)),
+          _buildAQIScaleItem(301, 500, 'Hazardous', const Color(0xFF795548)),
+        ],
       ),
     );
   }
@@ -179,8 +203,8 @@ class AirQualityDetailScreen extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 24,
-            height: 24,
+            width: 16,
+            height: 16,
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
@@ -193,6 +217,7 @@ class AirQualityDetailScreen extends StatelessWidget {
               style: TextStyle(
                 color: isDay ? AppColors.textPrimary : Colors.white,
                 fontSize: 16,
+                fontWeight: FontWeight.w300,
               ),
             ),
           ),

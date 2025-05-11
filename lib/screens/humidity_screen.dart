@@ -13,163 +13,161 @@ class HumidityDetailScreen extends StatelessWidget {
     required this.isDay,
   });
 
+  String _getHumidityDescription(double humidity) {
+    if (humidity < 30) return 'Very Dry';
+    if (humidity < 40) return 'Dry';
+    if (humidity < 60) return 'Comfortable';
+    if (humidity < 70) return 'Moderately Humid';
+    if (humidity < 80) return 'Humid';
+    return 'Very Humid';
+  }
+
+  String _getDewPointDescription(double dewPoint) {
+    if (dewPoint < 10) return 'Very Dry';
+    if (dewPoint < 13) return 'Dry';
+    if (dewPoint < 16) return 'Comfortable';
+    if (dewPoint < 18) return 'Moderately Humid';
+    if (dewPoint < 21) return 'Humid';
+    return 'Very Humid';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final humidityDescription = _getHumidityDescription(humidity);
+    final dewPointDescription = _getDewPointDescription(dewPoint);
+
     return Scaffold(
       backgroundColor: isDay ? AppColors.clearDayStart : AppColors.clearNightEnd,
       appBar: AppBar(
-        title: const Text('Humidity Details'),
+        title: const Text('Humidity',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w300,
+            )),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(
-          color: isDay ? AppColors.textPrimary : Colors.white,
+        iconTheme: const IconThemeData(
+          color: Colors.white,
         ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _buildCurrentHumiditySection(),
-            const SizedBox(height: 24),
-            _buildDewPointSection(),
-            const SizedBox(height: 24),
-            _buildHumidityExplanationSection(),
+            _buildMainCard(humidityDescription),
+            const SizedBox(height: 16),
+            _buildInfoCard('Dew Point', '${dewPoint.toStringAsFixed(1)}°', dewPointDescription, Icons.thermostat),
+            const SizedBox(height: 16),
+            _buildInfoCard('Comfort Level', _getComfortDescription(humidity, dewPoint), '', Icons.sentiment_satisfied),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCurrentHumiditySection() {
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Icon(
-              Icons.water_drop,
-              color: isDay ? AppColors.iconColor : Colors.white,
-              size: 48,
+  Widget _buildMainCard(String description) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Text(
+            '${humidity.toStringAsFixed(0)}%',
+            style: TextStyle(
+              color: isDay ? AppColors.textPrimary : Colors.white,
+              fontSize: 72,
+              fontWeight: FontWeight.w200,
             ),
-            const SizedBox(height: 16),
-            Text(
-              '${humidity.toStringAsFixed(0)}%',
-              style: TextStyle(
-                color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-              ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: TextStyle(
+              color: isDay ? AppColors.textPrimary : Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w300,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Current Humidity',
-              style: TextStyle(
-                color: isDay ? AppColors.textSecondary : Colors.white70,
-                fontSize: 18,
-              ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Relative Humidity',
+            style: TextStyle(
+              color: isDay ? AppColors.textSecondary : Colors.white70,
+              fontSize: 16,
+              fontWeight: FontWeight.w300,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildDewPointSection() {
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Dew Point',
-              style: TextStyle(
+  Widget _buildInfoCard(String title, String value, String description, IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
                 color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+                size: 24,
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${dewPoint.toStringAsFixed(1)}°',
-                  style: TextStyle(
-                    color: isDay ? AppColors.textPrimary : Colors.white,
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                  ),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDay ? AppColors.textPrimary : Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w300,
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (value.isNotEmpty)
             Text(
-              'The dew point is the temperature to which air must be cooled to become saturated with water vapor.',
+              value,
+              style: TextStyle(
+                color: isDay ? AppColors.textPrimary : Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          if (description.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              description,
               style: TextStyle(
                 color: isDay ? AppColors.textSecondary : Colors.white70,
                 fontSize: 16,
+                fontWeight: FontWeight.w300,
               ),
-              textAlign: TextAlign.center,
             ),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildHumidityExplanationSection() {
-    String comfortLevel;
-    Color comfortColor;
-
-    if (humidity < 30) {
-      comfortLevel = 'Low humidity. May cause dry skin and irritation.';
-      comfortColor = Colors.orange;
-    } else if (humidity < 60) {
-      comfortLevel = 'Comfortable humidity level. Ideal for most activities.';
-      comfortColor = Colors.green;
+  String _getComfortDescription(double humidity, double dewPoint) {
+    if (humidity < 30 || dewPoint < 10) {
+      return 'The air is very dry. Consider using a humidifier and staying hydrated.';
+    } else if (humidity > 70 || dewPoint > 21) {
+      return 'The air is very humid. Consider using air conditioning or a dehumidifier.';
     } else {
-      comfortLevel = 'High humidity. May feel muggy and uncomfortable.';
-      comfortColor = Colors.blue;
+      return 'The humidity level is comfortable for most people.';
     }
-
-    return Card(
-      color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Comfort Level',
-              style: TextStyle(
-                color: isDay ? AppColors.textPrimary : Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              comfortLevel,
-              style: TextStyle(
-                color: isDay ? comfortColor : Colors.white,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Relative humidity indicates how much water vapor is in the air compared to the maximum possible at that temperature.',
-              style: TextStyle(
-                color: isDay ? AppColors.textSecondary : Colors.white70,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
