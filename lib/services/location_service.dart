@@ -3,6 +3,20 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:translator/translator.dart';
 
+class LocationInfo {
+  final String cityName;
+  final String countryCode;
+  final String countryName;
+  final String fullAddress;
+
+  LocationInfo({
+    required this.cityName,
+    required this.countryCode,
+    required this.countryName,
+    required this.fullAddress,
+  });
+}
+
 class LocationService {
   final GoogleTranslator _translator = GoogleTranslator();
 
@@ -54,9 +68,9 @@ class LocationService {
     }
   }
 
-  Future<String?> getCityFromCoordinates(double lat, double lon, {bool translate = true}) async {
+  Future<LocationInfo> getCityFromCoordinates(double lat, double lon, {bool translate = true}) async {
     try {
-      final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon');
+      final url = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon&addressdetails=1');
       final response = await http.get(
         url,
         headers: {'User-Agent': 'ViWeather/1.0'},
@@ -70,33 +84,61 @@ class LocationService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final address = data['address'];
-        
-        // Пробуем получить название города из разных полей адреса
-        String? cityName = address['city'] ?? 
-                          address['town'] ?? 
-                          address['village'] ?? 
-                          address['municipality'] ??
-                          address['county'];
-        
+
+        // Get city name
+        String? cityName = address['city'] ??
+            address['town'] ??
+            address['village'] ??
+            address['municipality'] ??
+            address['county'];
+
+        // Get country information
+        String countryCode = address['country_code']?.toUpperCase() ?? '';
+        String countryName = address['country'] ?? '';
+
+        // Get full address for better context
+        String fullAddress = data['display_name'] ?? '';
+
+
         if (cityName != null) {
           if (translate) {
-            // Переводим название города на английский
+            // Translate city name to English
             final translatedName = await _translateToEnglish(cityName);
-            return translatedName;
-          } else {
-            return cityName;
+            cityName = translatedName ?? cityName;
           }
+
+          return LocationInfo(
+            cityName: cityName,
+            countryCode: countryCode,
+            countryName: countryName,
+            fullAddress: fullAddress,
+          );
         }
-        
-        // Если не нашли город, возвращаем координаты
-        return '${lat.toStringAsFixed(2)}°N, ${lon.toStringAsFixed(2)}°E';
+
+        // If no city found, return coordinates with country info
+        return LocationInfo(
+          cityName: '${lat.toStringAsFixed(2)}°N, ${lon.toStringAsFixed(2)}°E',
+          countryCode: countryCode,
+          countryName: countryName,
+          fullAddress: fullAddress,
+        );
       } else {
         print('Error response from Nominatim: ${response.body}');
-        return '${lat.toStringAsFixed(2)}°N, ${lon.toStringAsFixed(2)}°E';
+        return LocationInfo(
+          cityName: '${lat.toStringAsFixed(2)}°N, ${lon.toStringAsFixed(2)}°E',
+          countryCode: '',
+          countryName: '',
+          fullAddress: '',
+        );
       }
     } catch (e) {
       print('Error getting city name: $e');
-      return '${lat.toStringAsFixed(2)}°N, ${lon.toStringAsFixed(2)}°E';
+      return LocationInfo(
+        cityName: '${lat.toStringAsFixed(2)}°N, ${lon.toStringAsFixed(2)}°E',
+        countryCode: '',
+        countryName: '',
+        fullAddress: '',
+      );
     }
   }
-} 
+}

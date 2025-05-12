@@ -1,6 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:viweather1/theme/app_colors.dart';
-import 'package:viweather1/widgets/hourly_chart.dart';
+import 'package:viweather1/widgets/temperature_chart.dart';
 import 'package:viweather1/models/weather_model.dart';
 
 class HumidityDetailScreen extends StatelessWidget {
@@ -65,41 +66,13 @@ class HumidityDetailScreen extends StatelessWidget {
           children: [
             _buildMainCard(humidityDescription),
             const SizedBox(height: 16),
-            if (hourlyData != null && hourlyData!.isNotEmpty) ...[
-              Container(
-                decoration: BoxDecoration(
-                  color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Hourly Humidity',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 180,
-                      child: HourlyChart(
-                        hourlyData: hourlyData!,
-                        metric: 'Влажность',
-                        unit: '%',
-                        lineColor: Colors.blueAccent,
-                        gradientColor: Colors.blueAccent,
-                        valueExtractor: (hour) => hour.humidity?.toDouble() ?? 0.0,
-                        timezone: timezone,
-                      ),
-                    ),
-                  ],
-                ),
+            if (hourlyData != null && hourlyData!.isNotEmpty)
+              HumidityChart(
+                humidities: hourlyData!.map((h) => h.humidity?.toDouble() ?? 0.0).toList(),
+                timezone: timezone,
+                isDay: isDay,
               ),
-              const SizedBox(height: 16),
-            ],
+            const SizedBox(height: 16),
             _buildInfoCard('Dew Point', '${dewPoint.toStringAsFixed(1)}°', dewPointDescription, Icons.thermostat),
             const SizedBox(height: 16),
             _buildInfoCard('Comfort Level', _getComfortDescription(humidity, dewPoint), '', Icons.sentiment_satisfied),
@@ -148,6 +121,7 @@ class HumidityDetailScreen extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildInfoCard(String title, String value, String description, IconData icon) {
     return Container(
@@ -204,9 +178,9 @@ class HumidityDetailScreen extends StatelessWidget {
   }
 
   String _getComfortDescription(double humidity, double dewPoint) {
-    if (humidity < 30 || dewPoint < 10) {
+    if (humidity < 30 && dewPoint < 10) {
       return 'The air is very dry. Consider using a humidifier and staying hydrated.';
-    } else if (humidity > 70 || dewPoint > 21) {
+    } else if (humidity > 70 && dewPoint > 21) {
       return 'The air is very humid. Consider using air conditioning or a dehumidifier.';
     } else {
       return 'The humidity level is comfortable for most people.';

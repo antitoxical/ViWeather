@@ -6,23 +6,24 @@ import 'package:viweather1/services/location_service.dart';
 class WeatherMap extends StatefulWidget {
   final double latitude;
   final double longitude;
-  final Function(double lat, double lon) onLocationSelected;
+  final Function(double lat, double lon, LocationInfo locationInfo) onLocationSelected;
 
   const WeatherMap({
-    Key? key,
+    Key ? key,
     required this.latitude,
     required this.longitude,
     required this.onLocationSelected,
-  }) : super(key: key);
+  }): super(key: key);
 
   @override
-  State<WeatherMap> createState() => _WeatherMapState();
+  State < WeatherMap > createState() => _WeatherMapState();
 }
 
-class _WeatherMapState extends State<WeatherMap> {
+class _WeatherMapState extends State < WeatherMap > {
   late final MapController _mapController;
   final LocationService _locationService = LocationService();
-  LatLng? _selectedLocation;
+  LatLng ? _selectedLocation;
+  LocationInfo ? _currentLocationInfo;
   bool _isLoading = false;
   double _currentZoom = 10.0;
 
@@ -31,6 +32,19 @@ class _WeatherMapState extends State<WeatherMap> {
     super.initState();
     _mapController = MapController();
     _selectedLocation = LatLng(widget.latitude, widget.longitude);
+    _updateLocationInfo();
+  }
+
+  Future < void > _updateLocationInfo() async {
+    if (_selectedLocation != null) {
+      final locationInfo = await _locationService.getCityFromCoordinates(
+        _selectedLocation!.latitude,
+        _selectedLocation!.longitude,
+      );
+      setState(() {
+        _currentLocationInfo = locationInfo;
+      });
+    }
   }
 
   @override
@@ -42,6 +56,7 @@ class _WeatherMapState extends State<WeatherMap> {
         _selectedLocation!,
         _currentZoom,
       );
+      _updateLocationInfo();
     }
   }
 
@@ -65,14 +80,21 @@ class _WeatherMapState extends State<WeatherMap> {
     }
   }
 
-  Future<void> _handleTap(LatLng location) async {
+  Future < void > _handleTap(LatLng location) async {
     setState(() {
       _isLoading = true;
       _selectedLocation = location;
     });
 
     try {
-      widget.onLocationSelected(location.latitude, location.longitude);
+      final locationInfo = await _locationService.getCityFromCoordinates(
+        location.latitude,
+        location.longitude,
+      );
+      setState(() {
+        _currentLocationInfo = locationInfo;
+      });
+      widget.onLocationSelected(location.latitude, location.longitude, locationInfo);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error selecting location: $e')),
@@ -158,6 +180,33 @@ class _WeatherMapState extends State<WeatherMap> {
             ),
           ),
         ),
+        // Location info overlay
+        if (_currentLocationInfo != null)
+          Positioned(
+            left: 8,
+            top: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(4),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                '${_currentLocationInfo!.cityName}, ${_currentLocationInfo!.countryCode}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
         // Кнопки масштабирования
         Positioned(
           right: 8,
@@ -179,6 +228,8 @@ class _WeatherMapState extends State<WeatherMap> {
                 child: Column(
                   children: [
                     IconButton(
+
+
                       icon: const Icon(Icons.add, size: 20),
                       onPressed: _handleZoomIn,
                       padding: const EdgeInsets.all(8),
@@ -216,4 +267,4 @@ class _WeatherMapState extends State<WeatherMap> {
       ],
     );
   }
-} 
+}

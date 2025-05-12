@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
@@ -66,10 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> fetchWeatherDataByCoordinates(double lat, double lon) async {
     try {
-      final city = await _locationService.getCityFromCoordinates(lat, lon, translate: true);
-      if (city != null) {
-        _cityController.text = city;
-        await fetchWeatherData(city);
+      final locationInfo = await _locationService.getCityFromCoordinates(lat, lon, translate: true);
+      if (locationInfo.cityName.isNotEmpty) {
+        _cityController.text = locationInfo.cityName;
+        await fetchWeatherData(locationInfo.cityName);
       } else {
         throw Exception('Could not determine city name');
       }
@@ -84,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> fetchWeatherData(String city) async {
     try {
       setState(() => _isLoading = true);
-      
+
       // Получаем координаты города
       final coordinates = await _weatherService.getCityCoordinates(city);
       setState(() => cityCoordinates = coordinates);
@@ -112,12 +113,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _handleMapLocationSelected(double lat, double lon) async {
+
+  Future<void> _handleMapLocationSelected(double lat, double lon, LocationInfo locationInfo) async {
     try {
-      final city = await _locationService.getCityFromCoordinates(lat, lon, translate: true);
-      if (city != null) {
-        _cityController.text = city;
-        await fetchWeatherData(city);
+      if (locationInfo.cityName.isNotEmpty) {
+        _cityController.text = locationInfo.cityName;
+        await fetchWeatherData(locationInfo.cityName);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not determine city name for selected location')),
@@ -138,13 +139,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isDayTime() {
     if (currentWeather == null) return true;
-    
+
     final now = DateTime.now();
     // Преобразуем строку timezone в число, убирая все нечисловые символы
     final timezoneStr = currentWeather!.timezone.replaceAll(RegExp(r'[^0-9-]'), '');
     final timezone = int.tryParse(timezoneStr) ?? 0;
     final localTime = now.add(Duration(hours: timezone));
-    
+
     return localTime.hour >= 6 && localTime.hour < 20;
   }
 
@@ -174,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final isDay = _isDayTime();
-    
+
     return Scaffold(
       body: Stack(
         children: [
@@ -228,6 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Expanded(
+
                   child: SingleChildScrollView(
                     physics: AlwaysScrollableScrollPhysics(),
                     child: Column(
@@ -296,6 +298,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 SizedBox(height: 20),
 
+
+
                                 if (dailyForecast != null)
                                   Padding(
                                     padding: const EdgeInsets.all(16.0),
@@ -360,6 +364,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
 
+                                if (hourlyForecast != null && hourlyForecast!.length == 24)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                      child: TemperatureChart(
+                                      temperatures: hourlyForecast!.map((h) => h.temperature).toList(),
+                                      timezone: currentWeather!.timezone,
+                                      isDay: isDay,
+                                      condition: currentWeather?.condition ?? 'Clear',
+                                    ),
+                                  ),
+
+
                                 if (currentWeatherDetails != null)
                                   Padding(
                                     padding: const EdgeInsets.all(16.0),
@@ -377,16 +393,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                         const SizedBox(height: 16),
 
                                         if (cityCoordinates != null)
-                                        Container(
-                                          width: double.infinity,
-                                          margin: const EdgeInsets.only(bottom: 16),
-                                          child: AirQualityCard(
-                                            aqi: airQualityIndex,
-                                            description: 'Current air quality in your region',
-                                            condition: currentWeather!.condition,
-                                            isDay: isDay,
+                                          Container(
+                                            width: double.infinity,
+                                            margin: const EdgeInsets.only(bottom: 16),
+                                            child: AirQualityCard(
+                                              aqi: airQualityIndex,
+                                              description: 'Current air quality in your region',
+                                              condition: currentWeather!.condition,
+                                              isDay: isDay,
+                                            ),
                                           ),
-                                        ),
 
                                         Container(
                                           width: double.infinity,
@@ -426,6 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             isDay: isDay,
                                             hourlyData: hourlyForecast,
                                             timezone:currentWeather!.timezone,
+
 
                                           ),
                                         ),

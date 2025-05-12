@@ -34,10 +34,18 @@ class WeatherService {
         // Формируем почасовой прогноз
         final hourly = data['forecast']['forecastday'][0]['hour']
             .map<HourlyForecast>((hour) => HourlyForecast(
-                  time: hour['time'].split(' ')[1],
-                  temperature: hour['temp_c'].toDouble(),
-                  condition: hour['condition']['text'],
-                ))
+          time: hour['time'].split(' ')[1],
+          temperature: hour['temp_c'].toDouble(),
+          condition: hour['condition']['text'],
+          humidity: hour['humidity']?.toDouble(),
+          windSpeed: hour['wind_kph']?.toDouble(),
+          precipitation: hour['precip_mm']?.toDouble(),
+          pressure: hour['pressure_mb']?.toDouble(),
+          cloudCover: hour['cloud']?.toDouble(),
+          feelsLike: hour['feelslike_c']?.toDouble(),
+          uvIndex: hour['uv']?.toDouble(),
+          windDirection: hour['wind_dir'],
+        ))
             .toList();
 
         // Формируем ежедневный прогноз
