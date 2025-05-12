@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:viweather1/models/weather_model.dart';
 import 'package:viweather1/theme/app_colors.dart';
 
 class WindDetailScreen extends StatelessWidget {
@@ -9,6 +10,7 @@ class WindDetailScreen extends StatelessWidget {
   final double yesterdayMaxWind;
   final bool isDay;
 
+
   const WindDetailScreen({
     super.key,
     required this.currentWindSpeed,
@@ -17,6 +19,7 @@ class WindDetailScreen extends StatelessWidget {
     required this.maxDailyWind,
     required this.yesterdayMaxWind,
     required this.isDay,
+
   });
 
   String _getWindDescription(double speed) {

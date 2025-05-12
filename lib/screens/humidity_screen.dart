@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:viweather1/theme/app_colors.dart';
+import 'package:viweather1/widgets/hourly_chart.dart';
+import 'package:viweather1/models/weather_model.dart';
 
 class HumidityDetailScreen extends StatelessWidget {
   final double humidity;
   final double dewPoint;
   final bool isDay;
+  final List<HourlyForecast>? hourlyData;
+  final String timezone;
 
   const HumidityDetailScreen({
     super.key,
     required this.humidity,
     required this.dewPoint,
     required this.isDay,
+    this.hourlyData,
+    required this.timezone,
+
   });
 
   String _getHumidityDescription(double humidity) {
@@ -58,6 +65,41 @@ class HumidityDetailScreen extends StatelessWidget {
           children: [
             _buildMainCard(humidityDescription),
             const SizedBox(height: 16),
+            if (hourlyData != null && hourlyData!.isNotEmpty) ...[
+              Container(
+                decoration: BoxDecoration(
+                  color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Hourly Humidity',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 180,
+                      child: HourlyChart(
+                        hourlyData: hourlyData!,
+                        metric: 'Влажность',
+                        unit: '%',
+                        lineColor: Colors.blueAccent,
+                        gradientColor: Colors.blueAccent,
+                        valueExtractor: (hour) => hour.humidity?.toDouble() ?? 0.0,
+                        timezone: timezone,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             _buildInfoCard('Dew Point', '${dewPoint.toStringAsFixed(1)}°', dewPointDescription, Icons.thermostat),
             const SizedBox(height: 16),
             _buildInfoCard('Comfort Level', _getComfortDescription(humidity, dewPoint), '', Icons.sentiment_satisfied),

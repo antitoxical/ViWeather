@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:viweather1/theme/app_colors.dart';
+import 'package:viweather1/widgets/hourly_chart.dart';
+import 'package:viweather1/models/weather_model.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 class PressureDetailScreen extends StatelessWidget {
   final double pressure;
   final bool isDay;
+  final List<HourlyForecast>? hourlyData;
+  final String timezone;
+
 
   const PressureDetailScreen({
     super.key,
     required this.pressure,
     required this.isDay,
+    this.hourlyData,
+    required this.timezone,
   });
 
   String _getPressureLevel(double pressure) {
@@ -59,6 +68,8 @@ class PressureDetailScreen extends StatelessWidget {
     final description = _getPressureDescription(pressureLevel);
     final effects = _getPressureEffects(pressureLevel);
 
+
+
     return Scaffold(
       backgroundColor: isDay ? AppColors.clearDayStart : AppColors.clearNightEnd,
       appBar: AppBar(
@@ -81,6 +92,41 @@ class PressureDetailScreen extends StatelessWidget {
           children: [
             _buildMainCard(pressureLevel),
             const SizedBox(height: 16),
+            if (hourlyData != null && hourlyData!.isNotEmpty) ...[
+              Container(
+                decoration: BoxDecoration(
+                  color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Hourly Pressure',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 180,
+                      child: HourlyChart(
+                        hourlyData: hourlyData!,
+                        metric: 'Pressure',
+                        unit: 'mba',
+                        lineColor: Colors.orangeAccent,
+                        gradientColor: Colors.orangeAccent,
+                        valueExtractor: (hour) => hour.pressure?.toDouble() ?? 0.0,
+                        timezone:timezone,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             _buildInfoCard('Weather Impact', description, Icons.cloud),
             const SizedBox(height: 16),
             _buildInfoCard('Health Effects', effects, Icons.health_and_safety),

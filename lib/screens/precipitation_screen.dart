@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:viweather1/models/weather_model.dart';
 import 'package:viweather1/theme/app_colors.dart';
 
 class PrecipitationDetailScreen extends StatelessWidget {
@@ -6,6 +7,7 @@ class PrecipitationDetailScreen extends StatelessWidget {
   final String description;
   final bool isDay;
   final double? probability;
+  final List<HourlyForecast>? hourlyData;
 
   const PrecipitationDetailScreen({
     super.key,
@@ -13,6 +15,7 @@ class PrecipitationDetailScreen extends StatelessWidget {
     required this.description,
     required this.isDay,
     this.probability,
+    this.hourlyData,
   });
 
   @override

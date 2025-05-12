@@ -2,22 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:viweather1/theme/app_colors.dart';
 import 'package:viweather1/widgets/weather_card_base.dart';
 import 'package:viweather1/screens/humidity_screen.dart';
+import 'package:viweather1/models/weather_model.dart';
+
 
 class HumidityCard extends StatelessWidget {
   final double humidity;
   final double dewPoint;
   final String condition;
   final bool isDay;
+  final List<HourlyForecast>? hourlyData;
   final VoidCallback? onTap;
+  final String timezone;
 
   const HumidityCard({
-    super.key,
+    Key? key,
     required this.humidity,
     required this.dewPoint,
     required this.condition,
-    this.isDay = true,
-    this.onTap,
-  });
+    required this.isDay,
+    required this.timezone,
+    this.hourlyData,
+    this.onTap
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +36,7 @@ class HumidityCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+
               children: [
                 Icon(
                   Icons.water_drop,
@@ -56,15 +63,15 @@ class HumidityCard extends StatelessWidget {
                   children: [
                     Text(
                       '${humidity.toStringAsFixed(0)}%',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppColors.textPrimary,
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Text(
-                      'Humidity',
+                      'Dew point: ${dewPoint.toStringAsFixed(1)}°',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 14,
@@ -72,27 +79,7 @@ class HumidityCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${dewPoint.toStringAsFixed(1)}°',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Dew Point',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
+
               ],
             ),
           ],
@@ -108,6 +95,8 @@ class HumidityCard extends StatelessWidget {
           humidity: humidity,
           dewPoint: dewPoint,
           isDay: isDay,
+          hourlyData: hourlyData,
+          timezone: timezone,
         ),
       ),
     );

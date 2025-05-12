@@ -37,12 +37,44 @@ class HourlyForecast {
   final String time;
   final double temperature;
   final String condition;
+  final double? humidity;
+  final double? windSpeed;
+  final double? precipitation;
+  final double? pressure;
+  final double? cloudCover;
+  final double? feelsLike;
+  final double? uvIndex;
+  final String? windDirection;
 
   HourlyForecast({
     required this.time,
     required this.temperature,
     required this.condition,
+    this.humidity,
+    this.windSpeed,
+    this.precipitation,
+    this.pressure,
+    this.cloudCover,
+    this.feelsLike,
+    this.uvIndex,
+    this.windDirection,
   });
+
+  factory HourlyForecast.fromJson(Map<String, dynamic> json) {
+    return HourlyForecast(
+      time: json['time'].split(' ')[1],
+      temperature: json['temp_c'].toDouble(),
+      condition: json['condition']['text'],
+      humidity: json['humidity']?.toDouble(),
+      windSpeed: json['wind_kph']?.toDouble(),
+      precipitation: json['precip_mm']?.toDouble(),
+      pressure: json['pressure_mb']?.toDouble(),
+      cloudCover: json['cloud']?.toDouble(),
+      feelsLike: json['feelslike_c']?.toDouble(),
+      uvIndex: json['uv']?.toDouble(),
+      windDirection: json['wind_dir'],
+    );
+  }
 }
 
 class DailyForecast {
@@ -79,6 +111,7 @@ class CurrentWeatherDetails {
   final int chanceOfSnow;
   final double maxDailyWind;
   final double yesterdayMaxWind;
+
 
   CurrentWeatherDetails({
     required this.temperature,
