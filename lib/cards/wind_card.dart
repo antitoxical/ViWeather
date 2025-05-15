@@ -13,6 +13,8 @@ class WindCard extends StatelessWidget {
   final double maxDailyWind;
   final double yesterdayMaxWind;
   final VoidCallback? onTap;
+  final List<HourlyForecast>? hourlyData;
+  final String timezone;
 
 
   const WindCard({
@@ -23,8 +25,10 @@ class WindCard extends StatelessWidget {
     required this.condition,
     required this.maxDailyWind,
     required this.yesterdayMaxWind,
+    required this.timezone,
     this.isDay = true,
-    this.onTap
+    this.onTap,
+    this.hourlyData,
 
   }) : super(key: key);
 
@@ -107,6 +111,8 @@ class WindCard extends StatelessWidget {
           maxDailyWind: maxDailyWind,
           yesterdayMaxWind: yesterdayMaxWind,
           isDay: isDay,
+          hourlyData: hourlyData,
+          timezone:timezone,
         ),
       ),
     );

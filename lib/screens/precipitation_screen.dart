@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:viweather1/models/weather_model.dart';
 import 'package:viweather1/theme/app_colors.dart';
+import 'package:viweather1/widgets/temperature_chart.dart';
 
 class PrecipitationDetailScreen extends StatelessWidget {
   final double precipitation;
-  final String description;
+  final int description;
   final bool isDay;
   final double? probability;
   final List<HourlyForecast>? hourlyData;
+  final String timezone;
 
   const PrecipitationDetailScreen({
     super.key,
     required this.precipitation,
     required this.description,
     required this.isDay,
+    required this.timezone,
     this.probability,
     this.hourlyData,
   });
@@ -42,10 +45,17 @@ class PrecipitationDetailScreen extends StatelessWidget {
           children: [
             _buildMainCard(),
             const SizedBox(height: 16),
-            _buildInfoCard('Description', description, Icons.info_outline),
+            if (hourlyData != null && hourlyData!.isNotEmpty)
+              PrecipitationChart(
+                precipitations: hourlyData!.map((h) => h.precipitation?.toDouble() ?? 0.0).toList(),
+                timezone: timezone,
+                isDay: isDay,
+              ),
+            const SizedBox(height: 16),
+            _buildInfoCard('Description', description , Icons.info_outline),
             if (probability != null) ...[
               const SizedBox(height: 16),
-              _buildInfoCard('Probability', '${probability!.toStringAsFixed(0)}%', Icons.water_drop),
+              _buildInfoCard('Probability', '${probability!.toStringAsFixed(0)}%' as int, Icons.water_drop),
             ],
             const SizedBox(height: 24),
             _buildTypesHeader(),
@@ -79,7 +89,7 @@ class PrecipitationDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '${precipitation.toStringAsFixed(1)} mm',
+            ' ${precipitation.toStringAsFixed(1)} mm',
             style: TextStyle(
               color: isDay ? AppColors.textPrimary : Colors.white,
               fontSize: 48,
@@ -100,7 +110,7 @@ class PrecipitationDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(String title, String value, IconData icon) {
+  Widget _buildInfoCard(String title, int value, IconData icon) {
     return Container(
       decoration: BoxDecoration(
         color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
@@ -121,7 +131,7 @@ class PrecipitationDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  'Warning',
                   style: TextStyle(
                     color: isDay ? AppColors.textPrimary : Colors.white,
                     fontSize: 20,
@@ -130,7 +140,7 @@ class PrecipitationDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  value,
+                  'The probability of continued precipitation within an hour is :${description.toStringAsFixed(0)}%',
                   style: TextStyle(
                     color: isDay ? AppColors.textSecondary : Colors.white70,
                     fontSize: 16,

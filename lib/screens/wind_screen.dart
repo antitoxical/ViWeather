@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:viweather1/models/weather_model.dart';
 import 'package:viweather1/theme/app_colors.dart';
+import 'package:viweather1/widgets/wind_chart.dart';
 
 class WindDetailScreen extends StatelessWidget {
   final double currentWindSpeed;
@@ -9,6 +10,8 @@ class WindDetailScreen extends StatelessWidget {
   final double maxDailyWind;
   final double yesterdayMaxWind;
   final bool isDay;
+  final List<HourlyForecast>? hourlyData;
+  final String timezone;
 
 
   const WindDetailScreen({
@@ -19,6 +22,8 @@ class WindDetailScreen extends StatelessWidget {
     required this.maxDailyWind,
     required this.yesterdayMaxWind,
     required this.isDay,
+    required this.timezone,
+    this.hourlyData,
 
   });
 
@@ -77,6 +82,13 @@ class WindDetailScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             _buildMainCard(windDescription),
+            if (hourlyData != null && hourlyData!.isNotEmpty)
+              WindChart(
+                Winds: hourlyData!.map((h) => h.windSpeed?.toDouble() ?? 0.0).toList(),
+                timezone: timezone,
+                isDay: isDay,
+              ),
+
             const SizedBox(height: 16),
             _buildInfoCard('Wind Direction', currentWindDirection, '', Icons.explore),
             const SizedBox(height: 16),

@@ -415,7 +415,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                             maxDailyWind: currentWeatherDetails!.maxDailyWind,
                                             yesterdayMaxWind: currentWeatherDetails!.yesterdayMaxWind,
                                             isDay: isDay,
-
+                                            hourlyData: hourlyForecast,
+                                            timezone:currentWeather!.timezone,
                                           ),
                                         ),
 
@@ -442,8 +443,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                             isDay: isDay,
                                             hourlyData: hourlyForecast,
                                             timezone:currentWeather!.timezone,
-
-
                                           ),
                                         ),
 
@@ -474,10 +473,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                           margin: const EdgeInsets.only(bottom: 16),
                                           child: PrecipitationCard(
                                             precipitation: currentWeatherDetails!.precipitation,
-                                            description: 'Next snowfall is expected on Sunday and will be 12 mm.',
+                                            description: currentWeatherDetails!.chanceOfRain,
                                             condition: currentWeather!.condition,
                                             isDay: isDay,
                                             hourlyData: hourlyForecast,
+                                            timezone:currentWeather!.timezone,
                                           ),
                                         ),
 

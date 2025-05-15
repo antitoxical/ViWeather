@@ -6,11 +6,12 @@ import 'package:viweather1/models/weather_model.dart';
 
 class PrecipitationCard extends StatelessWidget {
   final double precipitation;
-  final String description;
+  final int description;
   final String condition;
   final bool isDay;
   final List<HourlyForecast>? hourlyData;
   final VoidCallback? onTap;
+  final String timezone;
 
   const PrecipitationCard({
     Key? key,
@@ -20,6 +21,8 @@ class PrecipitationCard extends StatelessWidget {
     required this.isDay,
     this.hourlyData,
     this.onTap,
+    required this.timezone,
+
   }) : super(key: key);
 
   String _getPrecipitationDescription(double amount) {
@@ -98,6 +101,7 @@ class PrecipitationCard extends StatelessWidget {
         builder: (context) => PrecipitationDetailScreen(
           precipitation: precipitation,
           description: description,
+          timezone: timezone,
           isDay: isDay,
           hourlyData: hourlyData,
         ),
