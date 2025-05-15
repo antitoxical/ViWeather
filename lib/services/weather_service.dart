@@ -23,14 +23,14 @@ class WeatherService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         // Получаем все необходимые данные из одного ответа
         final current = CurrentWeather.fromJson(data);
         final coordinates = {
           'latitude': (data['location']['lat'] as num).toDouble(),
           'longitude': (data['location']['lon'] as num).toDouble(),
         };
-        
+
         // Формируем почасовой прогноз
         final hourly = data['forecast']['forecastday'][0]['hour']
             .map<HourlyForecast>((hour) => HourlyForecast(
@@ -51,18 +51,18 @@ class WeatherService {
         // Формируем ежедневный прогноз
         final daily = data['forecast']['forecastday']
             .map<DailyForecast>((day) => DailyForecast(
-                  day: day['date'],
-                  maxTemp: day['day']['maxtemp_c'].toDouble(),
-                  minTemp: day['day']['mintemp_c'].toDouble(),
-                  condition: day['day']['condition']['text'],
-                ))
+          day: day['date'],
+          maxTemp: day['day']['maxtemp_c'].toDouble(),
+          minTemp: day['day']['mintemp_c'].toDouble(),
+          condition: day['day']['condition']['text'],
+        ))
             .toList()
             .take(5)
             .toList();
 
         // Формируем детальную информацию
         final details = _parseWeatherDetails(data);
-        
+
         // Получаем индекс качества воздуха
         final aqi = _parseAirQuality(data);
 
@@ -172,6 +172,33 @@ class WeatherService {
   Future<int> getAirQuality(String city) async {
     final data = await getAllWeatherData(city);
     return data['aqi'] as int;
+  }
+
+  Future<List<Map<String, dynamic>>> searchCities(String query) async {
+    try {
+      final url = Uri.parse('$baseUrl/search.json?key=$apiKey&q=$query');
+      final response = await http.get(url).timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          throw Exception('Превышено время ожидания ответа от сервера');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((city) => {
+          'name': city['name'] ?? '',
+          'region': city['region'] ?? '',
+          'country': city['country'] ?? '',
+        }).toList();
+      } else {
+        print('API Error Response: ${response.body}');
+        throw Exception('Ошибка получения данных: ${response.body}');
+      }
+    } catch (e) {
+      print('Error in searchCities: $e');
+      rethrow;
+    }
   }
 
   DateTime tryParseTime(String timeString) {

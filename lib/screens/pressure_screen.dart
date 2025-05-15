@@ -3,7 +3,7 @@ import 'package:viweather1/theme/app_colors.dart';
 import 'package:viweather1/models/weather_model.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:viweather1/widgets/temperature_chart.dart';
+import 'package:viweather1/widgets/pressure_chart.dart';
 
 class PressureDetailScreen extends StatelessWidget {
   final double pressure;

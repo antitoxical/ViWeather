@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
@@ -46,6 +45,9 @@ class _HomeScreenState extends State<HomeScreen> {
   int airQualityIndex = 0;
 
   final TextEditingController _cityController = TextEditingController();
+  List<Map<String, dynamic>> _citySuggestions = [];
+  bool _isSearching = false;
+  bool _suppressSearch = false;
 
   Future<void> _getCurrentLocation() async {
     try {
@@ -113,6 +115,32 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _searchCities(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _citySuggestions = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      final suggestions = await _weatherService.searchCities(query);
+      setState(() {
+        _citySuggestions = suggestions;
+        _isSearching = false;
+      });
+    } catch (e) {
+      print('Error searching cities: $e');
+      setState(() {
+        _isSearching = false;
+      });
+    }
+  }
 
   Future<void> _handleMapLocationSelected(double lat, double lon, LocationInfo locationInfo) async {
     try {
@@ -135,6 +163,16 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _getCurrentLocation();
+    _cityController.addListener(() {
+      if (_suppressSearch) return;
+      _searchCities(_cityController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _cityController.dispose();
+    super.dispose();
   }
 
   bool _isDayTime() {
@@ -188,43 +226,101 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _cityController,
-                          decoration: InputDecoration(
-                            labelText: 'Enter city name',
-                            filled: true,
-                            fillColor: Colors.white.withOpacity(0.15),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(
-                                color: Colors.white.withOpacity(0.2),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _cityController,
+                              decoration: InputDecoration(
+                                labelText: 'Enter city name',
+                                filled: true,
+                                fillColor: Colors.white.withOpacity(0.15),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.white.withOpacity(0.2),
+                                  ),
+                                ),
+                                labelStyle: TextStyle(color: Colors.white),
+                                suffixIcon: _isSearching
+                                    ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                                    : null,
                               ),
+                              style: TextStyle(color: Colors.white),
                             ),
-                            labelStyle: TextStyle(color: Colors.white),
                           ),
-                          style: TextStyle(color: Colors.white),
-                        ),
+                          SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              final city = _cityController.text.trim();
+                              if (city.isNotEmpty) {
+                                fetchWeatherData(city);
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Please enter a city name')),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white.withOpacity(0.2),
+                            ),
+                            child: Text('Search', style: TextStyle(color: Colors.white)),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          final city = _cityController.text.trim();
-                          if (city.isNotEmpty) {
-                            fetchWeatherData(city);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Please enter a city name')),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.2),
+                      if (_citySuggestions.isNotEmpty)
+                        Container(
+                          margin: EdgeInsets.only(top: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                            ),
+                          ),
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            itemCount: _citySuggestions.length,
+                            itemBuilder: (context, index) {
+                              final city = _citySuggestions[index];
+                              return ListTile(
+                                title: Text(
+                                  city['name']!,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                subtitle: Text(
+                                  '${city['region']!}, ${city['country']!}',
+                                  style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                                ),
+                                onTap: () {
+                                  setState(() {
+                                    _suppressSearch = true;
+                                    _cityController.text = city['name']!;
+                                    _citySuggestions = [];
+                                  });
+
+                                  fetchWeatherData(city['name']!);
+                                  FocusScope.of(context).unfocus();
+                                  Future.delayed(Duration(milliseconds: 100), (){
+                                    setState(() {
+                                      _suppressSearch = false;
+                                    });
+                                  });
+                                },
+                              );
+                            },
+                          ),
                         ),
-                        child: Text('Search', style: TextStyle(color: Colors.white)),
-                      ),
                     ],
                   ),
                 ),
@@ -367,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 if (hourlyForecast != null && hourlyForecast!.length == 24)
                                   Padding(
                                     padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                      child: TemperatureChart(
+                                    child: TemperatureChart(
                                       temperatures: hourlyForecast!.map((h) => h.temperature).toList(),
                                       timezone: currentWeather!.timezone,
                                       isDay: isDay,

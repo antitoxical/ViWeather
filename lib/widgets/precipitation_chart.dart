@@ -6,62 +6,52 @@ import 'package:viweather1/theme/app_colors.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:viweather1/widgets/weather_card_base.dart';
 
-class TemperatureChart extends StatelessWidget {
-  final List<double> temperatures;
+
+class PrecipitationChart extends StatelessWidget {
+  final List<double> precipitations;
   final String timezone;
   final bool isDay;
-  final String condition;
 
-  const TemperatureChart({
+  const PrecipitationChart({
     Key? key,
-    required this.temperatures,
+    required this.precipitations,
     required this.timezone,
     required this.isDay,
-    required this.condition,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Проверяем, что у нас есть все 24 значения температуры
-    if (temperatures.length != 24) {
-      print('Warning: Expected 24 temperature values, got ${temperatures.length}');
+    if (precipitations.length != 24) {
+      print('Warning: Expected 24 precipitation(mm) values, got ${precipitations.length}');
       return const Center(child: Text('Insufficient data to build the chart'));
     }
-
-    // Инициализация timezone данных
     tz.initializeTimeZones();
-
-    // Получаем текущее время в часовом поясе города
     final now = tz.TZDateTime.now(tz.getLocation(timezone));
-
-    // Создаем список временных меток для следующих 6 часов
     final List<String> timeLabels = List.generate(6, (index) {
       final hour = (now.hour + index) % 24;
       final formattedHour = hour.toString().padLeft(2, '0');
       return '$formattedHour:00';
     });
-
-    // Берем температуры начиная с текущего часа для следующих 6 часов
-    final displayTemperatures = List<double>.generate(6, (index) {
+    final displayPressures = List<double>.generate(6, (index) {
       final hourIndex = (now.hour + index) % 24;
-      return temperatures[hourIndex];
+      return precipitations[hourIndex];
     });
-
     return Container(
-      height: 300,
+      height: 200,
       padding: const EdgeInsets.all(16),
-      child: WeatherCardBase(
-        condition: condition,
-        isDay: isDay,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      decoration: BoxDecoration(
+        color: isDay ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Temperature by Hour',
+            'Precipitation by Hour',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Colors.white70,
             ),
           ),
           const SizedBox(height: 8),
@@ -106,8 +96,8 @@ class TemperatureChart extends StatelessWidget {
                             child: Text(
                               timeLabels[value.toInt()],
                               style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 12,
+                                color: Colors.white70,
+                                fontSize: 8,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -116,8 +106,6 @@ class TemperatureChart extends StatelessWidget {
                         return const Text('');
                       },
                     ),
-
-
                   ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
@@ -125,10 +113,10 @@ class TemperatureChart extends StatelessWidget {
                       interval: 5,
                       getTitlesWidget: (value, meta) {
                         return Text(
-                          '${value.toInt()}°',
+                          '${value.toInt()} mm',
                           style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 12,
+                            color: Colors.white70,
+                            fontSize: 8,
                             fontWeight: FontWeight.w500,
                           ),
                         );
@@ -143,16 +131,16 @@ class TemperatureChart extends StatelessWidget {
                 ),
                 minX: 0,
                 maxX: 5,
-                minY: displayTemperatures.reduce((a, b) => a < b ? a : b) - 5,
-                maxY: displayTemperatures.reduce((a, b) => a > b ? a : b) + 5,
+                minY: displayPressures.reduce((a, b) => a < b ? a : b) - 5,
+                maxY: displayPressures.reduce((a, b) => a > b ? a : b) + 5,
                 lineBarsData: [
                   LineChartBarData(
                     spots: List.generate(
-                      displayTemperatures.length,
-                          (index) => FlSpot(index.toDouble(), displayTemperatures[index]),
+                      displayPressures.length,
+                          (index) => FlSpot(index.toDouble(), displayPressures[index]),
                     ),
                     isCurved: true,
-                    color: Colors.blue,
+                    color: Colors.green,
                     barWidth: 3,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
@@ -160,7 +148,7 @@ class TemperatureChart extends StatelessWidget {
                       getDotPainter: (spot, percent, barData, index) {
                         return FlDotCirclePainter(
                           radius: 4,
-                          color: Colors.blue,
+                          color: Colors.green,
                           strokeWidth: 2,
                           strokeColor: Colors.white,
                         );
@@ -168,13 +156,13 @@ class TemperatureChart extends StatelessWidget {
                     ),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: Colors.blue.withOpacity(0.1),
+                      color: Colors.green.withOpacity(0.1),
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.blue.withOpacity(0.2),
-                          Colors.blue.withOpacity(0.0),
+                          Colors.green.withOpacity(0.2),
+                          Colors.green.withOpacity(0.0),
                         ],
                       ),
                     ),
@@ -185,9 +173,6 @@ class TemperatureChart extends StatelessWidget {
           ),
         ],
       ),
-      )
     );
-
-
   }
 }

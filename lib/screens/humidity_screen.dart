@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:viweather1/theme/app_colors.dart';
-import 'package:viweather1/widgets/temperature_chart.dart';
+import 'package:viweather1/widgets/humidity_chart.dart';
 import 'package:viweather1/models/weather_model.dart';
 
 class HumidityDetailScreen extends StatelessWidget {
